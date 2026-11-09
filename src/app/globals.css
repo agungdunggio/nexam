@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 239 84% 67%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 258 90% 66%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 239 84% 67%;
+
+    --radius: 0.75rem;
+
+    /* Hex references for direct use */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8FAFC;
+    --bg-tertiary: #F1F5F9;
+    --bg-elevated: #FFFFFF;
+
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-tertiary: #94A3B8;
+
+    --border-default: #E2E8F0;
+    --border-hover: #CBD5E1;
+    --border-focus: #6366F1;
+  }
+
+  [data-theme="dark"],
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 239 84% 73%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 258 90% 72%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 239 84% 73%;
+
+    /* Hex references for dark */
+    --bg-primary: #0B0F1A;
+    --bg-secondary: #111827;
+    --bg-tertiary: #1E293B;
+    --bg-elevated: #1A2332;
+
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-tertiary: #64748B;
+
+    --border-default: #1E293B;
+    --border-hover: #334155;
+    --border-focus: #818CF8;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Circular theme toggle reveal animation (View Transitions API) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Gradients and visual effects */
+.gradient-hero {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A78BFA 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .gradient-text {
+  background: linear-gradient(135deg, #818CF8 0%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-card {
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.08) 100%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+[data-theme="dark"] .glass {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gradient-mesh {
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.10) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(167, 139, 250, 0.08) 0px, transparent 50%);
+}
+
+/* Duolingo Gamified 3D tactile buttons & components (Nexam Indigo Palette) */
+.duo-button-green,
+.duo-button-nexam,
+.duo-button-indigo {
+  background-color: #6366F1;
+  border-bottom: 4px solid #4338CA;
+  color: white;
+  font-weight: 800;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+.duo-button-green:hover:not(:disabled),
+.duo-button-nexam:hover:not(:disabled),
+.duo-button-indigo:hover:not(:disabled) {
+  background-color: #4F46E5;
+}
+.duo-button-green:active:not(:disabled),
+.duo-button-nexam:active:not(:disabled),
+.duo-button-indigo:active:not(:disabled) {
+  border-bottom-width: 0px;
+  transform: translateY(4px);
+}
+
+.duo-button-indigo {
+  background-color: #6366F1;
+  border-bottom: 4px solid #4338CA;
+  color: white;
+  font-weight: 800;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+.duo-button-indigo:hover:not(:disabled) {
+  background-color: #4F46E5;
+}
+.duo-button-indigo:active:not(:disabled) {
+  border-bottom-width: 0px;
+  transform: translateY(4px);
+}
+
+.duo-button-outline {
+  border: 2px solid #E2E8F0;
+  border-bottom: 4px solid #CBD5E1;
+  background-color: white;
+  color: #334155;
+  font-weight: 700;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+.dark .duo-button-outline {
+  border-color: #334155;
+  border-bottom-color: #1E293B;
+  background-color: #1E293B;
+  color: #E2E8F0;
+}
+.duo-button-outline:hover {
+  background-color: #F8FAFC;
+}
+.dark .duo-button-outline:hover {
+  background-color: #0F172A;
+}
+.duo-button-outline:active {
+  border-bottom-width: 2px;
+  transform: translateY(2px);
+}
+
+.duo-option-card {
+  border: 2px solid #E2E8F0;
+  border-bottom: 4px solid #CBD5E1;
+  background-color: white;
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+  user-select: none;
+}
+.dark .duo-option-card {
+  border-color: #334155;
+  border-bottom-color: #1E293B;
+  background-color: #0F172A;
+}
+.duo-option-card:hover {
+  border-color: #A5B4FC;
+  background-color: #F8FAFC;
+}
+.dark .duo-option-card:hover {
+  background-color: #1E293B;
+}
+.duo-option-card:active {
+  border-bottom-width: 2px;
+  transform: translateY(2px);
+}
+.duo-option-card.selected {
+  border-color: #6366F1;
+  border-bottom: 4px solid #4338CA;
+  background-color: #EEF2FF;
+  color: #1E1B4B;
+}
+.dark .duo-option-card.selected {
+  border-color: #818CF8;
+  border-bottom-color: #4F46E5;
+  background-color: rgba(99, 102, 241, 0.18);
+  color: #EEF2FF;
+}

@@ -121,6 +121,9 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${fontSans.variable} ${fontMono.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/png" sizes="any" href="/icon.png?v=3" />
+        <link rel="shortcut icon" href="/favicon.ico?v=3" />
+        <link rel="apple-touch-icon" href="/apple-icon.png?v=3" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

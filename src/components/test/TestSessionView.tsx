@@ -349,10 +349,10 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
       {/* Question Map / Navigator Modal */}
       <Dialog open={navModalOpen} onOpenChange={setNavModalOpen}>
         <DialogContent className="sm:max-w-lg rounded-3xl p-6 border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-black text-slate-900 dark:text-white flex items-center justify-between">
-              <span>Daftar Soal {subtestName}</span>
-              <span className="text-xs font-mono px-2 py-1 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold">
+          <DialogHeader className="pr-10">
+            <DialogTitle className="text-lg font-black text-slate-900 dark:text-white flex items-center justify-between gap-3">
+              <span className="truncate">Daftar Soal {subtestName}</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold shrink-0">
                 {answeredCount} Terjawab
               </span>
             </DialogTitle>

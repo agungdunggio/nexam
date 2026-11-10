@@ -92,34 +92,34 @@ export function Navbar() {
                     {user.name}
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 shadow-xl">
-                  <DropdownMenuLabel className="font-normal px-2 py-1.5">
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1.5 shadow-xl">
+                  <DropdownMenuLabel className="font-normal px-2.5 py-2">
                     <div className="flex flex-col space-y-0.5">
                       <p className="text-sm font-black text-slate-900 dark:text-white leading-none">
                         {user.name}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-none truncate">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-none truncate mt-0.5">
                         {user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer rounded-xl text-xs py-0 px-0">
-                    <Link href="/test" className="flex items-center gap-2 w-full px-2 py-2">
-                      <BookOpen className="w-4 h-4 text-indigo-500" />
-                      <span className="font-bold">Pilih Subtes Soal</span>
+                  <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+                  <DropdownMenuItem className="cursor-pointer rounded-xl text-xs p-0 focus:bg-indigo-50 dark:focus:bg-indigo-950/60 focus:text-indigo-600 dark:focus:text-indigo-300 transition-colors">
+                    <Link href="/test" className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                      <BookOpen className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
+                      <span>Pilih Subtes Soal</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
                   <DropdownMenuItem
                     onClick={async () => {
                       playPop();
                       await logout();
                     }}
-                    className="cursor-pointer rounded-xl text-xs py-2 text-rose-600 dark:text-rose-400 font-bold focus:bg-rose-50 dark:focus:bg-rose-950/40"
+                    className="cursor-pointer rounded-xl text-xs px-3 py-2.5 text-rose-600 dark:text-rose-400 font-bold focus:bg-rose-50 dark:focus:bg-rose-950/50 focus:text-rose-700 dark:focus:text-rose-300 transition-colors"
                   >
-                    <div className="flex items-center gap-2">
-                      <LogOut className="w-4 h-4" />
+                    <div className="flex items-center gap-2.5 w-full">
+                      <LogOut className="w-4 h-4 text-rose-500 shrink-0" />
                       <span>Keluar Akun</span>
                     </div>
                   </DropdownMenuItem>

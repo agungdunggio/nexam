@@ -127,12 +127,12 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
 
-                  {/* Latihan Soal - Active / Hover Sky */}
+                  {/* Latihan Soal - Active / Hover Primary Ungu (Indigo) */}
                   <DropdownMenuItem
                     className={`group/lat cursor-pointer rounded-xl text-xs p-0 transition-colors ${
                       isPractice
-                        ? 'bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 font-black'
-                        : 'text-slate-700 dark:text-slate-200 hover:bg-sky-50/70 focus:bg-sky-50/70 data-highlighted:bg-sky-50/70 hover:text-sky-600 focus:text-sky-600 dark:hover:bg-sky-950/50 dark:focus:bg-sky-950/50 dark:data-highlighted:bg-sky-950/50 dark:hover:text-sky-400 dark:focus:text-sky-400'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 font-black'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-indigo-50/70 focus:bg-indigo-50/70 data-highlighted:bg-indigo-50/70 hover:text-indigo-600 focus:text-indigo-600 dark:hover:bg-indigo-950/50 dark:focus:bg-indigo-950/50 dark:data-highlighted:bg-indigo-950/50 dark:hover:text-indigo-400 dark:focus:text-indigo-400'
                     }`}
                   >
                     <Link
@@ -142,8 +142,8 @@ export function Navbar() {
                       <BookOpen
                         className={`w-4 h-4 shrink-0 transition-transform group-hover/lat:scale-110 group-focus/lat:scale-110 ${
                           isPractice
-                            ? 'text-sky-600 dark:text-sky-400'
-                            : 'text-slate-500 dark:text-slate-400 group-hover/lat:text-sky-500 dark:group-hover/lat:text-sky-400'
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-500 dark:text-slate-400 group-hover/lat:text-indigo-500 dark:group-hover/lat:text-indigo-400'
                         }`}
                       />
                       <span>Latihan Soal</span>

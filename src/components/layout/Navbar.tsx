@@ -24,6 +24,23 @@ export function Navbar() {
   const { user, isLoggedIn, logout } = useAuthStore();
   const [soundOn, setSoundOn] = useState(true);
 
+  const isSimulation = pathname?.startsWith('/simulation');
+  const isPractice = pathname?.startsWith('/test') || pathname?.startsWith('/results');
+
+  const currentMode = isSimulation
+    ? {
+        label: 'Simulasi UTBK',
+        shortLabel: 'Simulasi',
+        icon: <GraduationCap className="w-3.5 h-3.5" />,
+      }
+    : isPractice
+    ? {
+        label: 'Latihan Soal',
+        shortLabel: 'Latihan',
+        icon: <BookOpen className="w-3.5 h-3.5" />,
+      }
+    : null;
+
   useEffect(() => {
     setSoundOn(isSoundEnabled());
   }, []);
@@ -55,10 +72,19 @@ export function Navbar() {
                 }}
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
                 Nexam
               </span>
+              {currentMode && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700 font-semibold text-sm">/</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
+                    {currentMode.icon}
+                    <span>{currentMode.label}</span>
+                  </span>
+                </>
+              )}
             </div>
           </Link>
         </div>
@@ -91,8 +117,13 @@ export function Navbar() {
                   <span className="hidden sm:inline max-w-[100px] truncate text-slate-800 dark:text-slate-200">
                     {user.name}
                   </span>
+                  {currentMode && (
+                    <span className="hidden md:inline-flex text-[10px] font-black px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
+                      {currentMode.shortLabel}
+                    </span>
+                  )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1.5 shadow-xl">
+                <DropdownMenuContent align="end" className="w-60 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1.5 shadow-xl">
                   <DropdownMenuLabel className="font-normal px-2.5 py-2">
                     <div className="flex flex-col space-y-0.5">
                       <p className="text-sm font-black text-slate-900 dark:text-white leading-none">
@@ -104,16 +135,80 @@ export function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
-                  <DropdownMenuItem className="cursor-pointer rounded-xl text-xs p-0 focus:bg-indigo-50 dark:focus:bg-indigo-950/60 focus:text-indigo-600 dark:focus:text-indigo-300 transition-colors">
-                    <Link href="/simulation" className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                      <GraduationCap className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
-                      <span>Simulasi UTBK Penuh</span>
+                  <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Pilih Mode
+                  </div>
+                  <DropdownMenuItem
+                    className={`cursor-pointer rounded-xl text-xs p-0 transition-colors ${
+                      isSimulation
+                        ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 font-black'
+                        : 'focus:bg-indigo-50 dark:focus:bg-indigo-950/60 focus:text-indigo-600 dark:focus:text-indigo-300'
+                    }`}
+                  >
+                    <Link
+                      href="/simulation"
+                      className="flex items-center justify-between w-full px-3 py-2.5 font-bold transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <GraduationCap
+                          className={`w-4 h-4 shrink-0 ${
+                            isSimulation
+                              ? 'text-indigo-600 dark:text-indigo-400'
+                              : 'text-slate-500 dark:text-slate-400'
+                          }`}
+                        />
+                        <span
+                          className={
+                            isSimulation
+                              ? 'text-indigo-600 dark:text-indigo-300 font-black'
+                              : 'text-slate-700 dark:text-slate-200'
+                          }
+                        >
+                          Simulasi UTBK Penuh
+                        </span>
+                      </div>
+                      {isSimulation && (
+                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-indigo-600 text-white shrink-0 ml-2">
+                          Aktif
+                        </span>
+                      )}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer rounded-xl text-xs p-0 focus:bg-indigo-50 dark:focus:bg-indigo-950/60 focus:text-indigo-600 dark:focus:text-indigo-300 transition-colors">
-                    <Link href="/test" className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                      <BookOpen className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
-                      <span>Latihan Soal</span>
+
+                  <DropdownMenuItem
+                    className={`cursor-pointer rounded-xl text-xs p-0 transition-colors ${
+                      isPractice
+                        ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 font-black'
+                        : 'focus:bg-indigo-50 dark:focus:bg-indigo-950/60 focus:text-indigo-600 dark:focus:text-indigo-300'
+                    }`}
+                  >
+                    <Link
+                      href="/test"
+                      className="flex items-center justify-between w-full px-3 py-2.5 font-bold transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <BookOpen
+                          className={`w-4 h-4 shrink-0 ${
+                            isPractice
+                              ? 'text-indigo-600 dark:text-indigo-400'
+                              : 'text-slate-500 dark:text-slate-400'
+                          }`}
+                        />
+                        <span
+                          className={
+                            isPractice
+                              ? 'text-indigo-600 dark:text-indigo-300 font-black'
+                              : 'text-slate-700 dark:text-slate-200'
+                          }
+                        >
+                          Latihan Soal
+                        </span>
+                      </div>
+                      {isPractice && (
+                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-indigo-600 text-white shrink-0 ml-2">
+                          Aktif
+                        </span>
+                      )}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />

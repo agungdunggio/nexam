@@ -22,6 +22,9 @@ export function Navbar() {
   const { user, isLoggedIn, logout } = useAuthStore();
   const [soundOn, setSoundOn] = useState(true);
 
+  const isSimulation = pathname?.startsWith('/simulation');
+  const isPractice = pathname?.startsWith('/test') || pathname?.startsWith('/results');
+
   useEffect(() => {
     setSoundOn(isSoundEnabled());
   }, []);
@@ -101,28 +104,48 @@ export function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
 
-                  {/* Simulasi UTBK Penuh - Indigo Theme Hover */}
+                  {/* Simulasi UTBK Penuh - Active / Hover Indigo */}
                   <DropdownMenuItem
-                    className="group/sim cursor-pointer rounded-xl text-xs p-0 focus:bg-indigo-50 data-highlighted:bg-indigo-50 dark:focus:bg-indigo-950/60 dark:data-highlighted:bg-indigo-950/60 focus:text-indigo-600 data-highlighted:text-indigo-600 dark:focus:text-indigo-400 dark:data-highlighted:text-indigo-400 transition-colors"
+                    className={`group/sim cursor-pointer rounded-xl text-xs p-0 transition-colors ${
+                      isSimulation
+                        ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-300 font-black'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-indigo-50/70 focus:bg-indigo-50/70 data-highlighted:bg-indigo-50/70 hover:text-indigo-600 focus:text-indigo-600 dark:hover:bg-indigo-950/50 dark:focus:bg-indigo-950/50 dark:data-highlighted:bg-indigo-950/50 dark:hover:text-indigo-400 dark:focus:text-indigo-400'
+                    }`}
                   >
                     <Link
                       href="/simulation"
-                      className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold text-slate-700 dark:text-slate-200 group-hover/sim:text-indigo-600 group-focus/sim:text-indigo-600 dark:group-hover/sim:text-indigo-400 transition-colors"
+                      className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold transition-colors"
                     >
-                      <GraduationCap className="w-4 h-4 text-indigo-500 dark:text-indigo-400 group-hover/sim:scale-110 group-focus/sim:scale-110 transition-transform shrink-0" />
+                      <GraduationCap
+                        className={`w-4 h-4 shrink-0 transition-transform group-hover/sim:scale-110 group-focus/sim:scale-110 ${
+                          isSimulation
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-500 dark:text-slate-400 group-hover/sim:text-indigo-500 dark:group-hover/sim:text-indigo-400'
+                        }`}
+                      />
                       <span>Simulasi UTBK Penuh</span>
                     </Link>
                   </DropdownMenuItem>
 
-                  {/* Latihan Soal - Sky Theme Hover */}
+                  {/* Latihan Soal - Active / Hover Sky */}
                   <DropdownMenuItem
-                    className="group/lat cursor-pointer rounded-xl text-xs p-0 focus:bg-sky-50 data-highlighted:bg-sky-50 dark:focus:bg-sky-950/60 dark:data-highlighted:bg-sky-950/60 focus:text-sky-600 data-highlighted:text-sky-600 dark:focus:text-sky-400 dark:data-highlighted:text-sky-400 transition-colors"
+                    className={`group/lat cursor-pointer rounded-xl text-xs p-0 transition-colors ${
+                      isPractice
+                        ? 'bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 font-black'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-sky-50/70 focus:bg-sky-50/70 data-highlighted:bg-sky-50/70 hover:text-sky-600 focus:text-sky-600 dark:hover:bg-sky-950/50 dark:focus:bg-sky-950/50 dark:data-highlighted:bg-sky-950/50 dark:hover:text-sky-400 dark:focus:text-sky-400'
+                    }`}
                   >
                     <Link
                       href="/test"
-                      className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold text-slate-700 dark:text-slate-200 group-hover/lat:text-sky-600 group-focus/lat:text-sky-600 dark:group-hover/lat:text-sky-400 transition-colors"
+                      className="flex items-center gap-2.5 w-full px-3 py-2.5 font-bold transition-colors"
                     >
-                      <BookOpen className="w-4 h-4 text-sky-500 dark:text-sky-400 group-hover/lat:scale-110 group-focus/lat:scale-110 transition-transform shrink-0" />
+                      <BookOpen
+                        className={`w-4 h-4 shrink-0 transition-transform group-hover/lat:scale-110 group-focus/lat:scale-110 ${
+                          isPractice
+                            ? 'text-sky-600 dark:text-sky-400'
+                            : 'text-slate-500 dark:text-slate-400 group-hover/lat:text-sky-500 dark:group-hover/lat:text-sky-400'
+                        }`}
+                      />
                       <span>Latihan Soal</span>
                     </Link>
                   </DropdownMenuItem>

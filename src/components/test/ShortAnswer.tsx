@@ -54,7 +54,7 @@ export function ShortAnswer({
         )}
       </div>
       <p className="text-xs font-semibold text-slate-400">
-        💡 Masukkan angka bulat atau desimal (contoh: 42 atau 3.5).
+        Petunjuk: Masukkan angka bulat atau desimal (contoh: 42 atau 3.5).
       </p>
     </div>
   );

@@ -60,7 +60,7 @@ export default function ResultsPage({ params }: PageProps) {
         <DuolingoMascot
           mood="cheering"
           size="md"
-          message={`Latihan Selesai! Skor kamu: ${result.score} poin. Pertahankan semangat belajarmu! 🎉`}
+          message={`Sesi latihan selesai. Skor kamu: ${result.score} poin. Evaluasi hasil dan pembahasanmu di bawah ini.`}
           bubbleSide="right"
         />
 

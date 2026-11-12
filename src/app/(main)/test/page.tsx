@@ -36,8 +36,8 @@ export default function DuolingoSelectTestPage() {
 
   // Mascot dynamic messages
   const mascotMessages: Record<TestType, string> = {
-    utbk: 'Pilih subtes UTBK-SNBT yang mau kamu latih! Sekali klik langsung mulai soal 🎯',
-    tpa: 'Tes Potensi Akademik (TPA) siap menguji kecepatan & logikamu! Pilih subtes favoritmu ⚡',
+    utbk: 'Pilih subtes UTBK-SNBT yang ingin kamu kerjakan untuk mengukur kesiapan ujianmu.',
+    tpa: 'Pilih modul Tes Potensi Akademik untuk melatih kemampuan verbal, logika, dan numerik.',
   };
 
   return (
@@ -59,7 +59,7 @@ export default function DuolingoSelectTestPage() {
               Langsung Mulai Soal
             </span>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-              Bank Soal Resmi Standar Seleksi 2026
+              Bank Soal Terkurasi Kisi-Kisi Terbaru
             </p>
           </div>
         </div>

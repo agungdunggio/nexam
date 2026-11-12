@@ -40,10 +40,12 @@ export default async function Image() {
               borderRadius: '16px',
               backgroundColor: '#6366F1',
               boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
-              fontSize: '30px',
+              fontSize: '28px',
+              fontWeight: 900,
+              color: '#FFFFFF',
             }}
           >
-            🦉
+            N
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px' }}>
@@ -95,7 +97,7 @@ export default async function Image() {
               color: '#A5B4FC',
             }}
           >
-            🎯 UTBK SNBT 2026
+            UTBK SNBT 2026
           </div>
           <div
             style={{
@@ -110,7 +112,7 @@ export default async function Image() {
               color: '#C4B5FD',
             }}
           >
-            🧠 Tes Potensi Akademik (TPA)
+            Tes Potensi Akademik (TPA)
           </div>
           <div
             style={{
@@ -125,7 +127,7 @@ export default async function Image() {
               color: '#6EE7B7',
             }}
           >
-            ⚡ Gratis & Siap Pakai
+            Simulasi Terstruktur
           </div>
         </div>
       </div>

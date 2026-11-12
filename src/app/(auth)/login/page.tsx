@@ -81,7 +81,7 @@ export default function LoginPage() {
         <DuolingoMascot
           mood="cheering"
           size="lg"
-          message="Hai calon mahasiswa! 🦉 Siap taklukkan ujian UTBK & TPA hari ini?"
+          message="Siap mulai latihan UTBK dan TPA hari ini? Pilih jalur ujian dan uji kemampuanmu."
           bubbleSide="top"
           className="mb-4 flex-col"
         />
@@ -89,7 +89,7 @@ export default function LoginPage() {
           Selamat Datang di Nexam!
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-          Latihan soal ujian masuk kuliah dengan gaya seru & interaktif seperti Duolingo.
+          Simulasi ujian masuk perguruan tinggi dengan evaluasi nilai instan dan analisis mendalam.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ export default function LoginPage() {
         </button>
 
         <p className="mt-5 text-center text-[11px] font-medium text-slate-400">
-          ✨ Langsung akses simulasi tanpa ribet password. Skor dan progress tersimpan otomatis.
+          Akses simulasi langsung tanpa kata sandi. Skor dan riwayat pengerjaan tersimpan otomatis.
         </p>
       </div>
     </div>

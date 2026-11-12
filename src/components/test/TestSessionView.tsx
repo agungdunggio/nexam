@@ -259,8 +259,8 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
             size="sm"
             message={
               hasAnsweredCurrent
-                ? 'Pilihan bagus! Klik lanjutkan untuk soal berikutnya 🚀'
-                : 'Pilih jawaban yang paling tepat menurutmu!'
+                ? 'Jawaban tersimpan. Klik lanjutkan untuk beralih ke soal berikutnya.'
+                : 'Pilih jawaban yang paling tepat menurutmu.'
             }
             bubbleSide="right"
           />
@@ -336,7 +336,7 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
           >
             <span>
               {isLastQuestion
-                ? 'Selesai & Kumpulkan 🎉'
+                ? 'Selesai & Kumpulkan'
                 : hasAnsweredCurrent
                 ? 'Lanjutkan'
                 : 'Lewati Soal'}
@@ -415,7 +415,7 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
           <DuolingoMascot
             mood="thinking"
             size="md"
-            message="Yakin ingin keluar? Jangan menyerah sekarang ya! 🦉"
+            message="Apakah kamu yakin ingin keluar dari sesi latihan ini?"
             bubbleSide="top"
             className="flex-col mx-auto mb-4"
           />

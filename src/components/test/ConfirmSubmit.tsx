@@ -51,8 +51,8 @@ export function ConfirmSubmit({
             size="md"
             message={
               isComplete
-                ? 'Luar biasa! Semua soal sudah berhasil kamu jawab! 🎉'
-                : `Masih ada ${unansweredCount} soal yang belum dijawab nih!`
+                ? 'Semua soal pada subtes ini telah selesai kamu jawab.'
+                : `Masih ada ${unansweredCount} soal yang belum dijawab.`
             }
             bubbleSide="top"
             className="flex-col"

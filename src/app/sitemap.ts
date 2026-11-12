@@ -12,6 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: `${baseUrl}/simulation`,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
       url: `${baseUrl}/test`,
       lastModified: currentDate,
       changeFrequency: 'weekly',

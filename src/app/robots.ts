@@ -7,8 +7,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/login', '/test', '/test/utbk', '/test/tpa'],
-        disallow: ['/api/', '/test/utbk/*', '/test/tpa/*', '/results/*'],
+        allow: ['/', '/login', '/test', '/test/utbk', '/test/tpa', '/simulation'],
+        disallow: [
+          '/api/',
+          '/test/utbk/*',
+          '/test/tpa/*',
+          '/results/*',
+          '/simulation/session/*',
+          '/simulation/results/*',
+        ],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

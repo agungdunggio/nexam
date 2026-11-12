@@ -61,32 +61,6 @@ export function Navbar() {
               </span>
             </div>
           </Link>
-
-          {/* Mode Switcher Nav (Desktop) */}
-          <nav className="hidden md:flex items-center gap-1.5 ml-4 pl-4 border-l-2 border-slate-200 dark:border-slate-800">
-            <Link
-              href="/simulation"
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                pathname?.startsWith('/simulation')
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/20'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>Simulasi UTBK</span>
-            </Link>
-            <Link
-              href="/test"
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                pathname?.startsWith('/test')
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/20'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>Latihan Soal</span>
-            </Link>
-          </nav>
         </div>
 
         {/* Right Actions */}

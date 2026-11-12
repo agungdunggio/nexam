@@ -19,11 +19,15 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     }
   }, [isLoggedIn, user, router]);
 
-  // Test session routes have their own full-screen Duolingo UI
-  const isTestSession = pathname.includes('/test/utbk/ses_') || pathname.includes('/test/tpa/ses_');
+  // Test session routes have their own full-screen UI
+  const isTestSession =
+    pathname.includes('/test/utbk/ses_') ||
+    pathname.includes('/test/tpa/ses_') ||
+    pathname.startsWith('/simulation/session');
   const isSelectPage = pathname === '/test' || pathname === '/test/utbk' || pathname === '/test/tpa';
-  const isResultsPage = pathname.startsWith('/results');
-  const hideSidebar = isSelectPage || isResultsPage;
+  const isResultsPage = pathname.startsWith('/results') || pathname.startsWith('/simulation/results');
+  const isSimulationPage = pathname.startsWith('/simulation');
+  const hideSidebar = isSelectPage || isResultsPage || isSimulationPage;
 
   // If user is logged out, don't flash protected screen
   if (isClient && !isLoggedIn && !user) {

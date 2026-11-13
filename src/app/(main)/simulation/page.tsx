@@ -57,21 +57,21 @@ export default function SimulationHubPage() {
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider">
             <GraduationCap className="w-4 h-4 text-indigo-400" />
             <span>Format Resmi Simulasi UTBK</span>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono text-slate-300">
-            <span className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700">
+            <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl">
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
               {UTBK_SIMULATION_SUBTESTS.length} Subtes
             </span>
-            <span className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700">
+            <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl">
               <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
               {totalQuestions} Soal
             </span>
-            <span className="flex items-center gap-1.5 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700">
+            <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
               {totalMinutes} Menit
             </span>
@@ -98,17 +98,17 @@ export default function SimulationHubPage() {
           <button
             onClick={handleStartSimulation}
             disabled={starting}
-            className="w-full sm:w-auto h-13 px-8 rounded-2xl duo-button-green text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-500/30 transition-transform active:scale-95"
+            className="w-full sm:w-auto min-h-[58px] px-9 sm:px-11 py-4 rounded-2xl duo-button-green text-base sm:text-lg font-black uppercase tracking-wider flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/30 transition-transform active:scale-95 cursor-pointer"
           >
             {starting ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
                 <span>Menyiapkan Sesi...</span>
               </>
             ) : (
               <>
                 <span>Mulai Simulasi Sekarang</span>
-                <ArrowRight className="w-5 h-5 stroke-[3]" />
+                <ArrowRight className="w-6 h-6 stroke-[3]" />
               </>
             )}
           </button>

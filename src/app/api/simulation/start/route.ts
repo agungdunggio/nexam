@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
 import { UTBK_SIMULATION_SUBTESTS, StoredSimulationSession } from '@/lib/simulationConfig';
-import { getSeedQuestions, toClientQuestion } from '@/lib/seedLoader';
+import { toClientQuestion } from '@/lib/seedLoader';
 import { sessionsCache, simulationsCache, StoredSession } from '@/lib/sessionStore';
+import { fetchQuestionsForSubtest, saveSimulationStartToSupabase } from '@/lib/supabaseSimulation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,10 +12,16 @@ export async function POST(request: NextRequest) {
     const sessionCookie = cookieStore.get('nexam_session');
     const userId = sessionCookie?.value || 'anonymous_user';
 
-    const simulationId = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const simulationId = crypto.randomUUID();
     const startedAt = new Date().toISOString();
 
     const subtestsState: StoredSimulationSession['subtests'] = [];
+    const subtestSessionsForDb: Array<{
+      sessionId: string;
+      subtestId: string;
+      timeLimitSec: number;
+      questionIds: string[];
+    }> = [];
 
     let firstSubtestData: {
       subtestId: string;
@@ -24,8 +32,8 @@ export async function POST(request: NextRequest) {
 
     for (let i = 0; i < UTBK_SIMULATION_SUBTESTS.length; i++) {
       const def = UTBK_SIMULATION_SUBTESTS[i];
-      const sessionId = `ses_sim_${Date.now()}_${i}_${def.id}`;
-      const questions = getSeedQuestions(def.id);
+      const sessionId = crypto.randomUUID();
+      const questions = await fetchQuestionsForSubtest(def.id);
 
       const clientQuestions = questions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
 
@@ -35,7 +43,7 @@ export async function POST(request: NextRequest) {
         test_type: 'utbk',
         subtest: def.id,
         time_limit_sec: def.timeLimitSec,
-        started_at: i === 0 ? startedAt : startedAt,
+        started_at: startedAt,
         finished_at: null,
         status: 'in_progress',
         question_ids: questions.map((q) => q.id),
@@ -52,6 +60,13 @@ export async function POST(request: NextRequest) {
         status: i === 0 ? 'in_progress' : 'pending',
         answers: {},
         flagged: [],
+      });
+
+      subtestSessionsForDb.push({
+        sessionId,
+        subtestId: def.id,
+        timeLimitSec: def.timeLimitSec,
+        questionIds: questions.map((q) => q.id),
       });
 
       if (i === 0) {
@@ -75,6 +90,14 @@ export async function POST(request: NextRequest) {
     };
 
     simulationsCache.set(simulationId, storedSimulation);
+
+    // Persist to Supabase in background (non-blocking)
+    saveSimulationStartToSupabase({
+      simulationId,
+      userId,
+      startedAt,
+      subtestSessions: subtestSessionsForDb,
+    }).catch((err) => console.warn('[Supabase] Non-blocking simulation start save error:', err));
 
     return NextResponse.json({
       success: true,

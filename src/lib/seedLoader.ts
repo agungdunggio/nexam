@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Question, TestType } from '@/types/test';
 
-interface RawSeedQuestion {
+export interface RawSeedQuestion {
   test_type: TestType;
   subtest: string;
   question_type: 'multiple_choice' | 'short_answer';

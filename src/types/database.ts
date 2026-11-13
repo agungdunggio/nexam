@@ -193,6 +193,41 @@ export interface Database {
           created_at?: string;
         };
       };
+      simulations: {
+        Row: {
+          id: string;
+          user_id: string;
+          status: string;
+          total_score: number | null;
+          percentile: number | null;
+          subtest_scores: Json;
+          started_at: string;
+          finished_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          status?: string;
+          total_score?: number | null;
+          percentile?: number | null;
+          subtest_scores?: Json;
+          started_at?: string;
+          finished_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          status?: string;
+          total_score?: number | null;
+          percentile?: number | null;
+          subtest_scores?: Json;
+          started_at?: string;
+          finished_at?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 }

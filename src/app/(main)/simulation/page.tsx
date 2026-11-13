@@ -98,17 +98,17 @@ export default function SimulationHubPage() {
           <button
             onClick={handleStartSimulation}
             disabled={starting}
-            className="w-full sm:w-auto min-h-[58px] px-9 sm:px-11 py-4 rounded-2xl duo-button-green text-base sm:text-lg font-black uppercase tracking-wider flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/30 transition-transform active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto h-12 px-6 sm:px-7 rounded-xl duo-button-green text-xs sm:text-sm font-black uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-md shadow-indigo-500/25 transition-transform active:scale-95 cursor-pointer"
           >
             {starting ? (
               <>
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Menyiapkan Sesi...</span>
               </>
             ) : (
               <>
                 <span>Mulai Simulasi Sekarang</span>
-                <ArrowRight className="w-6 h-6 stroke-[3]" />
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </>
             )}
           </button>

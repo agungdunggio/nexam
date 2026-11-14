@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SUBTEST_CONFIG } from '@/lib/constants';
 import { useTestStore } from '@/stores/testStore';
@@ -52,14 +53,18 @@ export default function DuolingoSelectTestPage() {
             bubbleSide="right"
           />
 
-          {/* Quick Stats Pill */}
+          {/* Quick Simulation CTA Pill */}
           <div className="flex sm:flex-col items-center sm:items-end justify-center gap-2 text-center sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-indigo-100 dark:border-indigo-900/40">
-            <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-              <Zap className="w-3.5 h-3.5 fill-current" />
-              Langsung Mulai Soal
-            </span>
+            <Link
+              href="/simulation"
+              className="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-indigo-500/25 transition-transform active:scale-95"
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>Simulasi UTBK Penuh</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
+            </Link>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-              Bank Soal Terkurasi Kisi-Kisi Terbaru
+              Mode CBT Ujian 6 Subtes
             </p>
           </div>
         </div>

@@ -1,13 +1,6 @@
+import fs from 'fs';
+import path from 'path';
 import { Question, TestType } from '@/types/test';
-import penalaranUmum from '@/data/seed/utbk/penalaran-umum.json';
-import penalaranMatematika from '@/data/seed/utbk/penalaran-matematika.json';
-import literasiBahasaIndonesia from '@/data/seed/utbk/literasi-bahasa-indonesia.json';
-import literasiBahasaInggris from '@/data/seed/utbk/literasi-bahasa-inggris.json';
-import pengetahuanKuantitatif from '@/data/seed/utbk/pengetahuan-kuantitatif.json';
-import pemahamanBacaanMenulis from '@/data/seed/utbk/pemahaman-bacaan-menulis.json';
-import tpaVerbal from '@/data/seed/tpa/verbal.json';
-import tpaNumerik from '@/data/seed/tpa/numerik.json';
-import tpaFigural from '@/data/seed/tpa/figural.json';
 
 export interface RawSeedQuestion {
   test_type: TestType;
@@ -23,27 +16,45 @@ export interface RawSeedQuestion {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-const SUBTEST_SEED_MAP: Record<string, RawSeedQuestion[]> = {
-  penalaran_umum: penalaranUmum as RawSeedQuestion[],
-  penalaran_matematika: penalaranMatematika as RawSeedQuestion[],
-  literasi_bahasa_indonesia: literasiBahasaIndonesia as RawSeedQuestion[],
-  literasi_bahasa_inggris: literasiBahasaInggris as RawSeedQuestion[],
-  pengetahuan_kuantitatif: pengetahuanKuantitatif as RawSeedQuestion[],
-  pemahaman_bacaan_menulis: pemahamanBacaanMenulis as RawSeedQuestion[],
-  verbal: tpaVerbal as RawSeedQuestion[],
-  numerik: tpaNumerik as RawSeedQuestion[],
-  figural: tpaFigural as RawSeedQuestion[],
+const SUBTEST_SEED_FILES: Record<string, string> = {
+  penalaran_umum: 'utbk/penalaran-umum.json',
+  penalaran_matematika: 'utbk/penalaran-matematika.json',
+  literasi_bahasa_indonesia: 'utbk/literasi-bahasa-indonesia.json',
+  literasi_bahasa_inggris: 'utbk/literasi-bahasa-inggris.json',
+  pengetahuan_kuantitatif: 'utbk/pengetahuan-kuantitatif.json',
+  pemahaman_bacaan_menulis: 'utbk/pemahaman-bacaan-menulis.json',
+  verbal: 'tpa/verbal.json',
+  numerik: 'tpa/numerik.json',
+  figural: 'tpa/figural.json',
 };
 
-export function getSeedQuestions(subtest: string, locale: 'id' | 'en' = 'id'): (RawSeedQuestion & { id: string })[] {
+/**
+ * Local-only filesystem fallback when Supabase is unreachable in dev.
+ * Uses runtime fs reads instead of static JSON imports because `src/data/seed/`
+ * is gitignored and absent from Vercel build checkouts.
+ */
+export function getSeedQuestions(
+  subtest: string,
+  locale: 'id' | 'en' = 'id'
+): (RawSeedQuestion & { id: string })[] {
   void locale;
-  const rawList = SUBTEST_SEED_MAP[subtest];
-  if (!rawList || rawList.length === 0) return [];
+  const relPath = SUBTEST_SEED_FILES[subtest];
+  if (!relPath) return [];
 
-  return rawList.map((item, idx) => ({
-    ...item,
-    id: `q_${subtest}_${idx + 1}`,
-  }));
+  try {
+    const fullPath = path.join(/* turbopackIgnore: true */ process.cwd(), 'src', 'data', 'seed', relPath);
+    if (!fs.existsSync(fullPath)) return [];
+    const rawJson = fs.readFileSync(fullPath, 'utf8');
+    const rawList = JSON.parse(rawJson) as RawSeedQuestion[];
+    if (!Array.isArray(rawList) || rawList.length === 0) return [];
+
+    return rawList.map((item, idx) => ({
+      ...item,
+      id: `q_${subtest}_${idx + 1}`,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export function toClientQuestion(
@@ -56,8 +67,8 @@ export function toClientQuestion(
     id: q.id,
     number,
     type: q.question_type,
-    content: (isEn && q.content_en) ? q.content_en : q.content_id,
-    options: (isEn && q.options_en && q.options_en.length > 0) ? q.options_en : q.options_id,
+    content: isEn && q.content_en ? q.content_en : q.content_id,
+    options: isEn && q.options_en && q.options_en.length > 0 ? q.options_en : q.options_id,
     difficulty: q.difficulty,
   };
 }

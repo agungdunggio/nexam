@@ -18,7 +18,14 @@ export function useResults(sessionId: string) {
       if (data.result) {
         setResult(data.result);
       } else {
-        setError(data.error?.message || 'Failed to load results');
+        const cached = typeof sessionStorage !== 'undefined'
+          ? sessionStorage.getItem(`nexam_result_${sessionId}`)
+          : null;
+        if (cached) {
+          setResult(JSON.parse(cached));
+        } else {
+          setError(data.error?.message || 'Failed to load results');
+        }
       }
     } catch {
       setError('An error occurred while fetching test results');

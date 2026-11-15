@@ -6,6 +6,7 @@ interface TestState {
   questions: Question[];
   isLoading: boolean;
   isSubmitting: boolean;
+  error: string | null;
 
   currentQuestionIndex: number;
   answers: Record<string, string>; // questionId -> answer
@@ -13,6 +14,7 @@ interface TestState {
 
   // Actions
   startTest: (testType: TestType, subtest: string) => Promise<string | null>;
+  clearError: () => void;
   setAnswer: (questionId: string, answer: string) => void;
   removeAnswer: (questionId: string) => void;
   toggleFlag: (questionIndex: number) => void;
@@ -30,13 +32,16 @@ export const useTestStore = create<TestState>((set, get) => ({
   questions: [],
   isLoading: false,
   isSubmitting: false,
+  error: null,
 
   currentQuestionIndex: 0,
   answers: {},
   flaggedQuestions: [],
 
+  clearError: () => set({ error: null }),
+
   startTest: async (testType: TestType, subtest: string) => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
       const res = await fetch('/api/test/start', {
         method: 'POST',
@@ -62,15 +67,22 @@ export const useTestStore = create<TestState>((set, get) => ({
           answers: {},
           flaggedQuestions: [],
           isLoading: false,
+          error: null,
         });
 
         get().saveProgress();
         return session.id;
       }
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: data?.error?.message || 'Gagal membuka soal untuk subtes ini.',
+      });
       return null;
     } catch {
-      set({ isLoading: false });
+      set({
+        isLoading: false,
+        error: 'Terjadi kesalahan koneksi saat memuat soal. Silakan coba lagi.',
+      });
       return null;
     }
   },
@@ -136,6 +148,8 @@ export const useTestStore = create<TestState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: session.id,
+          test_type: session.testType,
+          subtest: session.subtest,
           answers: payloadAnswers,
           time_spent_sec: timeSpentSec,
           auto_submitted: autoSubmitted,
@@ -146,6 +160,13 @@ export const useTestStore = create<TestState>((set, get) => ({
       if (data.success) {
         if (typeof sessionStorage !== 'undefined') {
           sessionStorage.removeItem(`nexam_test_${session.id}`);
+          if (data.fullResult) {
+            try {
+              sessionStorage.setItem(`nexam_result_${session.id}`, JSON.stringify(data.fullResult));
+            } catch {
+              // Ignore storage quota errors
+            }
+          }
         }
         set({ isSubmitting: false });
         return { sessionId: session.id };

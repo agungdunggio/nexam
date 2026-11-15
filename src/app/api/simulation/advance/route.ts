@@ -5,7 +5,9 @@ import { simulationsCache } from '@/lib/sessionStore';
 import { calculateScore } from '@/lib/scoring';
 import {
   fetchQuestionsForSubtest,
+  loadSimulationFromSupabase,
   saveSubtestResultToSupabase,
+  saveSimulationProgressToSupabase,
   saveSimulationCompletionToSupabase,
 } from '@/lib/supabaseSimulation';
 
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sim = simulationsCache.get(simulationId);
+    const sim = await loadSimulationFromSupabase(simulationId);
     if (!sim) {
       return NextResponse.json(
         {
@@ -111,8 +113,8 @@ export async function POST(request: NextRequest) {
     currentSubtestState.incorrectCount = wrongCount;
     currentSubtestState.unansweredCount = unansweredCount;
 
-    // Save subtest result to Supabase (non-blocking)
-    saveSubtestResultToSupabase({
+    // Save subtest result to Supabase
+    await saveSubtestResultToSupabase({
       userId: sim.userId,
       sessionId: currentSubtestState.sessionId,
       subtestId: currentSubtestState.subtestId,
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
       unansweredCount,
       score: scoreResult.score,
       answers: answersToSave,
-    }).catch((err) => console.warn('[Supabase] Non-blocking subtest save error:', err));
+    });
 
     // Check if there is a next subtest
     const nextIndex = subtestIndex + 1;
@@ -137,6 +139,8 @@ export async function POST(request: NextRequest) {
 
       nextSubtestState.status = 'in_progress';
       nextSubtestState.startedAt = new Date().toISOString();
+      simulationsCache.set(simulationId, sim);
+      await saveSimulationProgressToSupabase(sim);
 
       return NextResponse.json({
         success: true,
@@ -164,20 +168,22 @@ export async function POST(request: NextRequest) {
       validScores.reduce((acc, curr) => acc + curr, 0) / Math.max(1, validScores.length)
     );
     sim.compositeScore = compositeScore;
+    simulationsCache.set(simulationId, sim);
 
-    // Save final simulation score to Supabase (non-blocking)
-    saveSimulationCompletionToSupabase({
+    // Save final simulation score to Supabase
+    await saveSimulationCompletionToSupabase({
       simulationId: sim.id,
       userId: sim.userId,
       finishedAt: sim.finishedAt,
       totalScore: compositeScore,
-      subtestScores: sim.subtests.map((s) => ({
+      subtestScores: sim.subtests.map((s, idx) => ({
         subtestId: s.subtestId,
         score: s.score || 0,
         correctCount: s.correctCount || 0,
-        totalQuestions: rawQuestions.length,
+        totalQuestions: UTBK_SIMULATION_SUBTESTS[idx]?.questionCount || rawQuestions.length,
       })),
-    }).catch((err) => console.warn('[Supabase] Non-blocking simulation final save error:', err));
+      subtestsState: sim.subtests,
+    });
 
     return NextResponse.json({
       success: true,

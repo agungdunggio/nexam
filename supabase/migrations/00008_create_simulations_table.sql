@@ -4,9 +4,11 @@ CREATE TABLE IF NOT EXISTS public.simulations (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     status VARCHAR(50) DEFAULT 'in_progress' NOT NULL,
+    current_subtest_index INTEGER DEFAULT 0 NOT NULL,
     total_score DECIMAL(6,2),
     percentile DECIMAL(5,2),
     subtest_scores JSONB DEFAULT '[]'::jsonb,
+    subtests_state JSONB DEFAULT '[]'::jsonb,
     started_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     finished_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL

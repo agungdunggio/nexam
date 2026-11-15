@@ -2,17 +2,22 @@
 
 import { useState } from 'react';
 import { AnswerReviewItem } from '@/types/results';
-import { CheckCircle2, XCircle, MinusCircle, Lightbulb, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { BookOpen, CheckCircle2, MinusCircle, XCircle } from 'lucide-react';
 import { useLanguageStore } from '@/stores/languageStore';
 
 interface AnswerReviewProps {
   answers?: AnswerReviewItem[];
 }
 
+type FilterMode = 'all' | 'correct' | 'wrong' | 'unanswered';
+
+/**
+ * Tactile Duolingo-style answer review with standalone pressable filter tabs,
+ * lesson-map question navigator, and flush two-zone question cards.
+ */
 export function AnswerReview({ answers = [] }: AnswerReviewProps) {
   const { t } = useLanguageStore();
-  const [filter, setFilter] = useState<'all' | 'correct' | 'wrong' | 'unanswered'>('all');
+  const [filter, setFilter] = useState<FilterMode>('all');
 
   const totalCount = answers.length;
   const correctCount = answers.filter((a) => a.is_correct).length;
@@ -26,210 +31,268 @@ export function AnswerReview({ answers = [] }: AnswerReviewProps) {
     return true;
   });
 
+  const handleJump = (item: AnswerReviewItem) => {
+    const matchesCurrentFilter =
+      filter === 'all' ||
+      (filter === 'correct' && item.is_correct) ||
+      (filter === 'wrong' && !item.is_correct && item.user_answer !== null) ||
+      (filter === 'unanswered' && item.user_answer === null);
+
+    if (!matchesCurrentFilter) {
+      setFilter('all');
+    }
+
+    setTimeout(() => {
+      document.getElementById(`soal-${item.number}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 20);
+  };
+
+  const filterButtons: {
+    id: FilterMode;
+    label: string;
+    count: number;
+    activeClass: string;
+  }[] = [
+    {
+      id: 'all',
+      label: 'Semua',
+      count: totalCount,
+      activeClass: 'bg-[#5248e5] border-[#3730a3] text-white',
+    },
+    {
+      id: 'correct',
+      label: 'Benar',
+      count: correctCount,
+      activeClass: 'bg-emerald-600 border-emerald-800 text-white',
+    },
+    {
+      id: 'wrong',
+      label: 'Salah',
+      count: wrongCount,
+      activeClass: 'bg-rose-600 border-rose-800 text-white',
+    },
+    {
+      id: 'unanswered',
+      label: 'Kosong',
+      count: unansweredCount,
+      activeClass: 'bg-slate-700 border-slate-900 text-white dark:bg-slate-200 dark:border-slate-400 dark:text-slate-950',
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+    <section id="pembahasan" aria-labelledby="review-heading" className="space-y-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <h2
+            id="review-heading"
+            className="text-xl sm:text-[22px] font-extrabold tracking-[-0.025em] text-[#13192b] dark:text-white"
+          >
             Pembahasan Soal
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Pelajari kunci jawaban dan pembahasan lengkap setiap butir soal.
+          </h2>
+          <p className="text-[13.5px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Tinjau kembali kunci jawaban dan langkah penyelesaian tiap butir soal.
           </p>
         </div>
 
-        {/* Filter Buttons with Icons & Counter Badges */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 select-none">
-          {/* Semua */}
-          <button
-            type="button"
-            onClick={() => setFilter('all')}
-            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              filter === 'all'
-                ? 'bg-indigo-600 text-white shadow-sm font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
-            }`}
-          >
-            <span>Semua</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                filter === 'all'
-                  ? 'bg-white/25 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-              }`}
-            >
-              {totalCount}
-            </span>
-          </button>
-
-          {/* Benar */}
-          <button
-            type="button"
-            onClick={() => setFilter('correct')}
-            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              filter === 'correct'
-                ? 'bg-emerald-500 text-white shadow-sm font-black'
-                : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">Benar</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                filter === 'correct'
-                  ? 'bg-white/25 text-white'
-                  : 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
-              }`}
-            >
-              {correctCount}
-            </span>
-          </button>
-
-          {/* Salah */}
-          <button
-            type="button"
-            onClick={() => setFilter('wrong')}
-            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              filter === 'wrong'
-                ? 'bg-rose-500 text-white shadow-sm font-black'
-                : 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-            }`}
-          >
-            <XCircle className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">Salah</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                filter === 'wrong'
-                  ? 'bg-white/25 text-white'
-                  : 'bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300'
-              }`}
-            >
-              {wrongCount}
-            </span>
-          </button>
-
-          {/* Kosong / Belum Terjawab */}
-          <button
-            type="button"
-            onClick={() => setFilter('unanswered')}
-            className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              filter === 'unanswered'
-                ? 'bg-slate-700 dark:bg-slate-600 text-white shadow-sm font-black'
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-            }`}
-          >
-            <MinusCircle className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">Kosong</span>
-            <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                filter === 'unanswered'
-                  ? 'bg-white/25 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-              }`}
-            >
-              {unansweredCount}
-            </span>
-          </button>
+        {/* Standalone Tactile Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Filter status soal">
+          {filterButtons.map((btn) => {
+            const isActive = filter === btn.id;
+            return (
+              <button
+                key={btn.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setFilter(btn.id)}
+                className={`h-9 px-3.5 rounded-xl border-2 border-b-4 active:translate-y-[2px] active:border-b-2 text-[13px] font-bold inline-flex items-center gap-1.5 transition-[transform,border-color,background-color] duration-100 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                  isActive
+                    ? btn.activeClass
+                    : 'bg-white dark:bg-[#141a29] border-[#dfe4ee] dark:border-[#252f47] text-slate-600 dark:text-slate-300 hover:border-indigo-200 dark:hover:border-indigo-700'
+                }`}
+              >
+                <span>{btn.label}</span>
+                <span className="text-xs opacity-85 tabular-nums">{btn.count}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="space-y-4">
-        {filteredAnswers.map((item) => {
-          const isAnswered = item.user_answer !== null;
-          let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700';
-          let statusText = 'Tidak Dijawab';
-          let StatusIcon = MinusCircle;
+      {/* Tactile Lesson-Map Question Navigator */}
+      {answers.length > 0 && (
+        <nav aria-label="Peta nomor soal" className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1">
+            Loncat:
+          </span>
+          {answers.map((item) => {
+            const isAnswered = item.user_answer !== null;
+            const nodeStyle = item.is_correct
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/70 text-emerald-700 dark:text-emerald-300'
+              : isAnswered
+              ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700/70 text-rose-700 dark:text-rose-300'
+              : 'bg-white dark:bg-[#141a29] border-[#dfe4ee] dark:border-[#252f47] text-slate-600 dark:text-slate-300';
 
-          if (item.is_correct) {
-            badgeColor = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-            statusText = 'Benar (+1)';
-            StatusIcon = CheckCircle2;
-          } else if (isAnswered) {
-            badgeColor = 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
-            statusText = 'Salah';
-            StatusIcon = XCircle;
-          }
+            return (
+              <button
+                key={item.question_id}
+                type="button"
+                onClick={() => handleJump(item)}
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-[10px] border-2 border-b-[3px] sm:border-b-4 active:translate-y-[2px] active:border-b-2 font-mono text-[11.5px] sm:text-xs font-extrabold inline-flex items-center justify-center transition-transform duration-100 tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${nodeStyle}`}
+                title={`Lompat ke Soal ${item.number}`}
+              >
+                {item.number}
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
-          return (
-            <div
-              key={item.question_id}
-              className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-mono font-extrabold text-xs px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50">
-                  Soal #{item.number}
-                </span>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}`}>
-                  <StatusIcon className="w-3.5 h-3.5" />
-                  <span>{statusText}</span>
-                </span>
-              </div>
+      {/* Question Stack */}
+      {filteredAnswers.length === 0 ? (
+        <div className="rounded-[20px] bg-white dark:bg-[#141a29] border-2 border-[#dfe4ee] dark:border-[#252f47] p-8 text-center">
+          <p className="text-sm font-bold text-[#13192b] dark:text-slate-100">
+            Tidak ada soal pada filter ini.
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Pilih tab &ldquo;Semua&rdquo; untuk menampilkan seluruh butir soal.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredAnswers.map((item) => {
+            const isAnswered = item.user_answer !== null;
+            let statusClass = 'text-slate-500 dark:text-slate-400';
+            let statusText = 'Kosong';
+            let StatusIcon = MinusCircle;
 
-              <p className="text-sm sm:text-base font-medium text-slate-900 dark:text-slate-100 leading-relaxed whitespace-pre-line">
-                {item.content}
-              </p>
+            if (item.is_correct) {
+              statusClass = 'text-emerald-700 dark:text-emerald-400';
+              statusText = 'Benar (+1)';
+              StatusIcon = CheckCircle2;
+            } else if (isAnswered) {
+              statusClass = 'text-rose-700 dark:text-rose-400';
+              statusText = 'Salah';
+              StatusIcon = XCircle;
+            }
 
-              {/* Multiple choice options preview if present */}
-              {item.options && item.options.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                  {item.options.map((opt) => {
-                    const isUserPick = item.user_answer?.toUpperCase() === opt.label.toUpperCase();
-                    const isRightPick = item.correct_answer?.toUpperCase() === opt.label.toUpperCase();
+            const paddedNum = String(item.number).padStart(2, '0');
 
-                    let optStyle = 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400';
-                    if (isRightPick) {
-                      optStyle = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold';
-                    } else if (isUserPick) {
-                      optStyle = 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 font-bold';
-                    }
+            return (
+              <article
+                id={`soal-${item.number}`}
+                key={item.question_id}
+                className="scroll-mt-20 rounded-[20px] bg-white dark:bg-[#141a29] border-2 border-[#dfe4ee] dark:border-[#252f47] border-b-[5px] border-b-[#cbd3e3] dark:border-b-[#0b0f19] overflow-hidden"
+              >
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-center justify-between gap-3 mb-3.5">
+                    <div className="inline-flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 text-[#5248e5] dark:text-indigo-300 font-mono text-xs font-extrabold inline-flex items-center justify-center tabular-nums">
+                        {paddedNum}
+                      </span>
+                      <span className="text-[13px] font-extrabold text-[#13192b] dark:text-white">
+                        Soal #{item.number}
+                      </span>
+                    </div>
 
-                    return (
-                      <div
-                        key={opt.label}
-                        className={`p-2.5 rounded-xl border text-xs flex items-center gap-2.5 ${optStyle}`}
-                      >
-                        <span className="w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 bg-white dark:bg-slate-900 border">
-                          {opt.label}
-                        </span>
-                        <span className="truncate">{opt.text}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Answer comparison tags */}
-              <div className="flex flex-wrap items-center gap-4 pt-3 text-xs font-medium border-t border-slate-100 dark:border-slate-800">
-                <div>
-                  <span className="text-slate-400">{t('results.your_answer')}: </span>
-                  <strong className={item.is_correct ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400 font-mono'}>
-                    {item.user_answer || '(Tidak Dijawab)'}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-slate-400">{t('results.correct_answer')}: </span>
-                  <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">
-                    {item.correct_answer}
-                  </strong>
-                </div>
-              </div>
-
-              {/* Explanation Box */}
-              {item.explanation && (
-                <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40">
-                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-1.5">
-                    <Lightbulb className="w-4 h-4 text-amber-500" />
-                    <span>{t('results.explanation')}</span>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold ${statusClass}`}>
+                      <StatusIcon className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
+                      <span>{statusText}</span>
+                    </span>
                   </div>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-                    {item.explanation}
+
+                  <p className="max-w-[68ch] text-[15.5px] font-semibold text-[#13192b] dark:text-slate-100 leading-relaxed whitespace-pre-line mb-4">
+                    {item.content}
                   </p>
+
+                  {/* Tactile MCQ Option Keycaps (full readable text, no truncation) */}
+                  {item.options && item.options.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-[72ch] mb-4">
+                      {item.options.map((opt) => {
+                        const isUserPick =
+                          item.user_answer?.toUpperCase() === opt.label.toUpperCase();
+                        const isRightPick =
+                          item.correct_answer?.toUpperCase() === opt.label.toUpperCase();
+
+                        let optStyle =
+                          'bg-[#f6f7fb] dark:bg-[#1c2438] border-[#dfe4ee] dark:border-[#252f47] text-slate-600 dark:text-slate-300 font-medium';
+                        let keyStyle =
+                          'border-[#dfe4ee] dark:border-[#334155] text-[#13192b] dark:text-slate-100';
+
+                        if (isRightPick) {
+                          optStyle =
+                            'bg-emerald-50 dark:bg-emerald-950/35 border-emerald-300 dark:border-emerald-700/70 text-emerald-800 dark:text-emerald-300 font-bold';
+                          keyStyle =
+                            'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300';
+                        } else if (isUserPick) {
+                          optStyle =
+                            'bg-rose-50 dark:bg-rose-950/35 border-rose-300 dark:border-rose-700/70 text-rose-800 dark:text-rose-300 font-bold';
+                          keyStyle =
+                            'border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300';
+                        }
+
+                        return (
+                          <div
+                            key={opt.label}
+                            className={`flex items-start gap-2.5 px-3 py-2.5 rounded-[13px] border-2 border-b-[3px] text-[13.5px] leading-snug ${optStyle}`}
+                          >
+                            <span
+                              className={`w-6 h-6 rounded-[7px] border bg-white dark:bg-[#141a29] font-extrabold text-[11.5px] inline-flex items-center justify-center shrink-0 mt-0.5 ${keyStyle}`}
+                            >
+                              {opt.label}
+                            </span>
+                            <span>{opt.text}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Verdict Row */}
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-slate-500 dark:text-slate-400">
+                    <div>
+                      <span>{t('results.your_answer')}: </span>
+                      <strong
+                        className={`font-extrabold tabular-nums ${
+                          item.is_correct
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : isAnswered
+                            ? 'text-rose-700 dark:text-rose-400'
+                            : 'text-slate-600 dark:text-slate-300'
+                        }`}
+                      >
+                        {item.user_answer || '(Tidak Dijawab)'}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>{t('results.correct_answer')}: </span>
+                      <strong className="font-extrabold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                        {item.correct_answer}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
+
+                {/* Flush Tonal Explanation Footer (Zero Nested Inner Box) */}
+                {item.explanation && (
+                  <div className="bg-[#f3f5ff] dark:bg-[#192138] border-t-2 border-[#dfe4ee] dark:border-[#252f47] px-5 sm:px-6 py-4">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#5248e5] dark:text-indigo-400 mb-1.5">
+                      <BookOpen className="w-3.5 h-3.5 stroke-[2.5]" aria-hidden="true" />
+                      <span>{t('results.explanation')}</span>
+                    </div>
+                    <p className="max-w-[68ch] text-[13.5px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                      {item.explanation}
+                    </p>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }

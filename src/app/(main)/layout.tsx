@@ -21,8 +21,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   // Test session routes have their own full-screen UI
   const isTestSession =
-    pathname.includes('/test/utbk/ses_') ||
-    pathname.includes('/test/tpa/ses_') ||
+    /^\/test\/(utbk|tpa)\/[^/]+/.test(pathname) ||
     pathname.startsWith('/simulation/session');
   const isSelectPage = pathname === '/test' || pathname === '/test/utbk' || pathname === '/test/tpa';
   const isResultsPage = pathname.startsWith('/results') || pathname.startsWith('/simulation/results');

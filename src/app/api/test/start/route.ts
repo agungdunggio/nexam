@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
 import { SUBTEST_CONFIG } from '@/lib/constants';
-import { getSeedQuestions, toClientQuestion } from '@/lib/seedLoader';
+import { toClientQuestion } from '@/lib/seedLoader';
 import { sessionsCache, StoredSession } from '@/lib/sessionStore';
+import { fetchQuestionsForSubtest } from '@/lib/supabaseSimulation';
+import { saveTestSessionToSupabase } from '@/lib/supabaseTest';
 import { TestType } from '@/types/test';
 
 export async function POST(request: NextRequest) {
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
     const sessionCookie = cookieStore.get('nexam_session');
     const userId = sessionCookie?.value || 'anonymous_user';
 
-    const questions = getSeedQuestions(subtest);
+    const questions = await fetchQuestionsForSubtest(subtest);
     if (!questions || questions.length === 0) {
       return NextResponse.json(
         {
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sessionId = `ses_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const sessionId = crypto.randomUUID();
     const timeLimitSec = config.timeLimitSec;
     const startedAt = new Date().toISOString();
 
@@ -66,6 +69,7 @@ export async function POST(request: NextRequest) {
     };
 
     sessionsCache.set(sessionId, storedSession);
+    await saveTestSessionToSupabase(storedSession);
 
     return NextResponse.json({
       success: true,

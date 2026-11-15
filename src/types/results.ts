@@ -37,6 +37,7 @@ export interface TestResult {
   created_at: string;
   answers?: AnswerReviewItem[];
   comparison?: ComparisonStats;
+  score_distribution?: ScoreDistributionBucket[];
 }
 
 export interface ScoreDistributionBucket {

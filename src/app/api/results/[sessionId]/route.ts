@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sessionsCache } from '@/lib/sessionStore';
-import { SUBTEST_CONFIG } from '@/lib/constants';
+import { loadTestResult } from '@/lib/supabaseTest';
 
 export async function GET(
   request: NextRequest,
@@ -8,9 +7,9 @@ export async function GET(
 ) {
   try {
     const { sessionId } = params;
-    const session = sessionsCache.get(sessionId);
+    const result = await loadTestResult(sessionId);
 
-    if (!session || !session.result) {
+    if (!result) {
       return NextResponse.json(
         {
           success: false,
@@ -22,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      result: session.result,
+      result,
     });
   } catch (error) {
     return NextResponse.json(

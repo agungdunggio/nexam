@@ -13,12 +13,13 @@ import { GraduationCap, Sparkles, Clock, ArrowRight, Loader2, Zap } from 'lucide
 
 export default function DuolingoSelectTestPage() {
   const router = useRouter();
-  const { startTest, isLoading } = useTestStore();
+  const { startTest, isLoading, error, clearError } = useTestStore();
   const [selectedTrack, setSelectedTrack] = useState<TestType>('utbk');
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
 
   const handleSelectTrack = (track: TestType) => {
     playPop();
+    clearError();
     setSelectedTrack(track);
   };
 
@@ -145,6 +146,20 @@ export default function DuolingoSelectTestPage() {
           </button>
         </div>
       </div>
+
+      {/* Error Feedback Banner */}
+      {error && (
+        <div className="mb-6 rounded-2xl border-2 border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 px-4 py-3 text-sm font-semibold text-rose-700 dark:text-rose-300 flex items-center justify-between gap-3">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={clearError}
+            className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-rose-100 dark:bg-rose-900/60 hover:bg-rose-200 dark:hover:bg-rose-900 transition-colors"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
 
       {/* Subtests Grid (Duolingo Style Chunky 3D Cards with Smooth Fade-in-up) */}
       <div key={selectedTrack} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 animate-fade-in-up">

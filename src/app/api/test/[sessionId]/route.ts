@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSeedQuestions, toClientQuestion } from '@/lib/seedLoader';
-import { sessionsCache } from '@/lib/sessionStore';
+import { toClientQuestion } from '@/lib/seedLoader';
+import { fetchQuestionsForSubtest } from '@/lib/supabaseSimulation';
+import { loadTestSession, orderQuestionsByIds } from '@/lib/supabaseTest';
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { sessionId } = params;
-    const session = sessionsCache.get(sessionId);
+    const session = await loadTestSession(sessionId);
 
     if (!session) {
       return NextResponse.json(
@@ -20,8 +21,9 @@ export async function GET(
       );
     }
 
-    const questions = getSeedQuestions(session.subtest);
-    const clientQuestions = questions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
+    const rawQuestions = await fetchQuestionsForSubtest(session.subtest);
+    const orderedQuestions = orderQuestionsByIds(rawQuestions, session.question_ids);
+    const clientQuestions = orderedQuestions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
 
     const startedTime = new Date(session.started_at).getTime();
     const now = Date.now();

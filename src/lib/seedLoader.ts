@@ -16,42 +16,43 @@ export interface RawSeedQuestion {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-const SUBTEST_FILE_MAP: Record<string, { folder: 'utbk' | 'tpa'; file: string }> = {
-  penalaran_umum: { folder: 'utbk', file: 'penalaran-umum.json' },
-  penalaran_matematika: { folder: 'utbk', file: 'penalaran-matematika.json' },
-  literasi_bahasa_indonesia: { folder: 'utbk', file: 'literasi-bahasa-indonesia.json' },
-  literasi_bahasa_inggris: { folder: 'utbk', file: 'literasi-bahasa-inggris.json' },
-  pengetahuan_kuantitatif: { folder: 'utbk', file: 'pengetahuan-kuantitatif.json' },
-  pemahaman_bacaan_menulis: { folder: 'utbk', file: 'pemahaman-bacaan-menulis.json' },
-  verbal: { folder: 'tpa', file: 'verbal.json' },
-  numerik: { folder: 'tpa', file: 'numerik.json' },
-  figural: { folder: 'tpa', file: 'figural.json' },
+const SUBTEST_SEED_FILES: Record<string, string> = {
+  penalaran_umum: 'utbk/penalaran-umum.json',
+  penalaran_matematika: 'utbk/penalaran-matematika.json',
+  literasi_bahasa_indonesia: 'utbk/literasi-bahasa-indonesia.json',
+  literasi_bahasa_inggris: 'utbk/literasi-bahasa-inggris.json',
+  pengetahuan_kuantitatif: 'utbk/pengetahuan-kuantitatif.json',
+  pemahaman_bacaan_menulis: 'utbk/pemahaman-bacaan-menulis.json',
+  verbal: 'tpa/verbal.json',
+  numerik: 'tpa/numerik.json',
+  figural: 'tpa/figural.json',
 };
 
-export function getSeedQuestions(subtest: string, locale: 'id' | 'en' = 'id'): (RawSeedQuestion & { id: string })[] {
-  const mapEntry = SUBTEST_FILE_MAP[subtest];
-  if (!mapEntry) return [];
-
-  const filePath = path.join(
-    process.cwd(),
-    'src',
-    'data',
-    'seed',
-    mapEntry.folder,
-    mapEntry.file
-  );
+/**
+ * Local-only filesystem fallback when Supabase is unreachable in dev.
+ * Uses runtime fs reads instead of static JSON imports because `src/data/seed/`
+ * is gitignored and absent from Vercel build checkouts.
+ */
+export function getSeedQuestions(
+  subtest: string,
+  locale: 'id' | 'en' = 'id'
+): (RawSeedQuestion & { id: string })[] {
+  void locale;
+  const relPath = SUBTEST_SEED_FILES[subtest];
+  if (!relPath) return [];
 
   try {
-    if (!fs.existsSync(filePath)) return [];
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const rawList: RawSeedQuestion[] = JSON.parse(content);
+    const fullPath = path.join(/* turbopackIgnore: true */ process.cwd(), 'src', 'data', 'seed', relPath);
+    if (!fs.existsSync(fullPath)) return [];
+    const rawJson = fs.readFileSync(fullPath, 'utf8');
+    const rawList = JSON.parse(rawJson) as RawSeedQuestion[];
+    if (!Array.isArray(rawList) || rawList.length === 0) return [];
 
     return rawList.map((item, idx) => ({
       ...item,
       id: `q_${subtest}_${idx + 1}`,
     }));
-  } catch (err) {
-    console.error('Failed reading seed questions:', err);
+  } catch {
     return [];
   }
 }
@@ -66,8 +67,8 @@ export function toClientQuestion(
     id: q.id,
     number,
     type: q.question_type,
-    content: (isEn && q.content_en) ? q.content_en : q.content_id,
-    options: (isEn && q.options_en && q.options_en.length > 0) ? q.options_en : q.options_id,
+    content: isEn && q.content_en ? q.content_en : q.content_id,
+    options: isEn && q.options_en && q.options_en.length > 0 ? q.options_en : q.options_id,
     difficulty: q.difficulty,
   };
 }

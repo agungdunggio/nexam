@@ -90,7 +90,7 @@ export default function ResultsPage({ params }: PageProps) {
       {/* Analytical Charts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <ComparisonChart userScore={result.score} comparison={result.comparison} />
-        <ScoreDistribution userScore={result.score} />
+        <ScoreDistribution userScore={result.score} buckets={result.score_distribution} />
         <PerformanceChart
           accuracy={accuracy}
           speedSecPerQuestion={speedSec}

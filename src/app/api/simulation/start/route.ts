@@ -91,13 +91,14 @@ export async function POST(request: NextRequest) {
 
     simulationsCache.set(simulationId, storedSimulation);
 
-    // Persist to Supabase in background (non-blocking)
-    saveSimulationStartToSupabase({
+    // Persist to Supabase before responding so serverless reload finds it immediately
+    await saveSimulationStartToSupabase({
       simulationId,
       userId,
       startedAt,
       subtestSessions: subtestSessionsForDb,
-    }).catch((err) => console.warn('[Supabase] Non-blocking simulation start save error:', err));
+      subtestsState,
+    });
 
     return NextResponse.json({
       success: true,

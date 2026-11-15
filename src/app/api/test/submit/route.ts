@@ -1,13 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculatePercentile, calculateScore } from '@/lib/scoring';
-import { getSeedQuestions } from '@/lib/seedLoader';
-import { sessionsCache } from '@/lib/sessionStore';
-import { AnswerReviewItem, ComparisonStats, TestResult } from '@/types/results';
+import { calculateScore } from '@/lib/scoring';
+import { sessionsCache, StoredSession } from '@/lib/sessionStore';
+import { fetchQuestionsForSubtest } from '@/lib/supabaseSimulation';
+import {
+  buildComparisonStats,
+  loadTestSession,
+  orderQuestionsByIds,
+  saveTestSubmissionToSupabase,
+} from '@/lib/supabaseTest';
+import { AnswerReviewItem, TestResult } from '@/types/results';
+import { TestType } from '@/types/test';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { session_id, answers, time_spent_sec = 0, auto_submitted = false } = body;
+    const {
+      session_id,
+      answers,
+      time_spent_sec = 0,
+      auto_submitted = false,
+      test_type: fallbackTestType,
+      subtest: fallbackSubtest,
+    } = body as {
+      session_id?: string;
+      answers?: Array<{ question_id: string; answer: string | null }>;
+      time_spent_sec?: number;
+      auto_submitted?: boolean;
+      test_type?: TestType;
+      subtest?: string;
+    };
 
     if (!session_id || !Array.isArray(answers)) {
       return NextResponse.json(
@@ -19,7 +40,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = sessionsCache.get(session_id);
+    let session = await loadTestSession(session_id);
+    if (!session && fallbackTestType && fallbackSubtest) {
+      session = {
+        id: session_id,
+        user_id: 'anonymous_user',
+        test_type: fallbackTestType,
+        subtest: fallbackSubtest,
+        time_limit_sec: 0,
+        started_at: new Date().toISOString(),
+        finished_at: null,
+        status: 'in_progress',
+        question_ids: [],
+        saved_answers: {},
+      } satisfies StoredSession;
+    }
+
     if (!session) {
       return NextResponse.json(
         {
@@ -40,7 +76,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const questions = getSeedQuestions(session.subtest);
+    const rawQuestions = await fetchQuestionsForSubtest(session.subtest);
+    const questions = orderQuestionsByIds(rawQuestions, session.question_ids);
     const answersMap = new Map<string, string | null>();
     answers.forEach((item: { question_id: string; answer: string | null }) => {
       answersMap.set(item.question_id, item.answer ? String(item.answer).trim() : null);
@@ -93,22 +130,12 @@ export async function POST(request: NextRequest) {
       unansweredCount,
     });
 
-    // Mock benchmark comparison distribution
-    const benchmarkScores = session.test_type === 'utbk'
-      ? [420, 510, 580, 620, 680, 720, 750, 780, 830, 890]
-      : [350, 420, 490, 540, 590, 640, 690, 730, 770];
-
-    const percentile = calculatePercentile(scoreResult.score, benchmarkScores);
-
-    const comparison: ComparisonStats = {
-      avg_score: session.test_type === 'utbk' ? 640 : 540,
-      median_score: session.test_type === 'utbk' ? 650 : 550,
-      your_rank: Math.max(1, Math.round((1 - percentile / 100) * 450) || 1),
-      total_participants: 450,
-      p25: session.test_type === 'utbk' ? 520 : 420,
-      p75: session.test_type === 'utbk' ? 760 : 660,
-      p90: session.test_type === 'utbk' ? 860 : 760,
-    };
+    const { percentile, comparison, score_distribution } = await buildComparisonStats(
+      session.test_type,
+      session.subtest,
+      scoreResult.score,
+      session_id
+    );
 
     const finalResult: TestResult = {
       session_id,
@@ -124,12 +151,14 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
       answers: reviewItems,
       comparison,
+      score_distribution,
     };
 
     session.status = auto_submitted ? 'timed_out' : 'completed';
     session.finished_at = new Date().toISOString();
     session.result = finalResult;
     sessionsCache.set(session_id, session);
+    await saveTestSubmissionToSupabase({ session, result: finalResult, reviewItems });
 
     return NextResponse.json({
       success: true,
@@ -143,6 +172,7 @@ export async function POST(request: NextRequest) {
         percentile,
         time_spent_sec,
       },
+      fullResult: finalResult,
     });
   } catch (error) {
     return NextResponse.json(

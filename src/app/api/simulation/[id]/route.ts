@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UTBK_SIMULATION_SUBTESTS } from '@/lib/simulationConfig';
-import { simulationsCache } from '@/lib/sessionStore';
-import { getSeedQuestions, toClientQuestion } from '@/lib/seedLoader';
+import { toClientQuestion } from '@/lib/seedLoader';
+import { fetchQuestionsForSubtest, loadSimulationFromSupabase } from '@/lib/supabaseSimulation';
 
 interface RouteParams {
   params: {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = params;
 
-    const sim = simulationsCache.get(id);
+    const sim = await loadSimulationFromSupabase(id);
     if (!sim) {
       return NextResponse.json(
         {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       const activeDef = UTBK_SIMULATION_SUBTESTS[sim.currentSubtestIndex];
       const activeState = sim.subtests[sim.currentSubtestIndex];
       if (activeDef && activeState) {
-        const rawQuestions = getSeedQuestions(activeDef.id);
+        const rawQuestions = await fetchQuestionsForSubtest(activeDef.id);
         const clientQuestions = rawQuestions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
         activeSubtestData = {
           subtestId: activeDef.id,
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         status: sim.status,
         currentSubtestIndex: sim.currentSubtestIndex,
         totalSubtests: sim.subtests.length,
+        compositeScore: sim.compositeScore ?? 0,
         breakdown,
         activeSubtest: activeSubtestData,
       },

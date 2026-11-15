@@ -1,7 +1,9 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getSeedQuestions, RawSeedQuestion } from '@/lib/seedLoader';
+import { simulationsCache } from '@/lib/sessionStore';
+import { StoredSimulationSession } from '@/lib/simulationConfig';
 
-function isValidUUID(str: string): boolean {
+export function isValidUUID(str: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
 }
 
@@ -23,7 +25,9 @@ export async function fetchQuestionsForSubtest(
     const { data, error } = await (supabase as any)
       .from('questions')
       .select('*')
-      .eq('subtest', subtest);
+      .eq('subtest', subtest)
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true });
 
     if (!error && Array.isArray(data) && data.length > 0) {
       const mapped: (RawSeedQuestion & { id: string })[] = data.map((q) => ({
@@ -64,6 +68,7 @@ export async function saveSimulationStartToSupabase(params: {
   userId: string;
   startedAt: string;
   subtestSessions: SubtestSessionInit[];
+  subtestsState?: StoredSimulationSession['subtests'];
 }) {
   if (!isValidUUID(params.userId)) {
     return; // anonymous or offline user
@@ -72,18 +77,20 @@ export async function saveSimulationStartToSupabase(params: {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // 1. Save master simulation record if table exists
-    try {
-      const simulationsTable = (supabase as any).from('simulations');
-      await simulationsTable.insert({
-        id: params.simulationId,
-        user_id: params.userId,
-        status: 'in_progress',
-        started_at: params.startedAt,
-        subtest_scores: [],
-      });
-    } catch {
-      // Table might not exist yet if migration hasn't run
+    // 1. Save master simulation record
+    const simulationsTable = (supabase as any).from('simulations');
+    const { error: simErr } = await simulationsTable.insert({
+      id: params.simulationId,
+      user_id: params.userId,
+      status: 'in_progress',
+      current_subtest_index: 0,
+      subtest_scores: [],
+      subtests_state: params.subtestsState || [],
+      started_at: params.startedAt,
+    });
+
+    if (simErr) {
+      console.warn('[Supabase] Non-blocking warning saving simulation:', simErr.message);
     }
 
     // 2. Save individual subtest sessions in test_sessions
@@ -107,6 +114,64 @@ export async function saveSimulationStartToSupabase(params: {
     }
   } catch (err) {
     console.warn('[Supabase] Non-blocking warning during simulation start persistence:', err);
+  }
+}
+
+export async function loadSimulationFromSupabase(
+  simulationId: string
+): Promise<StoredSimulationSession | null> {
+  const cached = simulationsCache.get(simulationId);
+  if (cached) return cached;
+
+  if (!isValidUUID(simulationId)) return null;
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: row, error } = await (supabase as any)
+      .from('simulations')
+      .select('*')
+      .eq('id', simulationId)
+      .maybeSingle();
+
+    if (error || !row || !Array.isArray(row.subtests_state) || row.subtests_state.length === 0) {
+      return null;
+    }
+
+    const loaded: StoredSimulationSession = {
+      id: row.id,
+      userId: row.user_id,
+      startedAt: row.started_at,
+      finishedAt: row.finished_at,
+      status: row.status === 'completed' ? 'completed' : 'in_progress',
+      currentSubtestIndex: Number(row.current_subtest_index) || 0,
+      subtests: row.subtests_state,
+      compositeScore: row.total_score != null ? Number(row.total_score) : undefined,
+    };
+
+    simulationsCache.set(simulationId, loaded);
+    return loaded;
+  } catch (err) {
+    console.warn('[Supabase] Error loading simulation:', err);
+    return null;
+  }
+}
+
+export async function saveSimulationProgressToSupabase(sim: StoredSimulationSession): Promise<void> {
+  if (!isValidUUID(sim.userId) || !isValidUUID(sim.id)) {
+    return;
+  }
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    await (supabase as any)
+      .from('simulations')
+      .update({
+        current_subtest_index: sim.currentSubtestIndex,
+        subtests_state: sim.subtests,
+      })
+      .eq('id', sim.id);
+  } catch (err) {
+    console.warn('[Supabase] Non-blocking simulation progress update error:', err);
   }
 }
 
@@ -195,6 +260,7 @@ export async function saveSimulationCompletionToSupabase(params: {
     correctCount: number;
     totalQuestions: number;
   }>;
+  subtestsState?: StoredSimulationSession['subtests'];
 }) {
   if (!isValidUUID(params.userId) || !isValidUUID(params.simulationId)) {
     return;
@@ -209,6 +275,7 @@ export async function saveSimulationCompletionToSupabase(params: {
         finished_at: params.finishedAt,
         total_score: params.totalScore,
         subtest_scores: params.subtestScores,
+        ...(params.subtestsState ? { subtests_state: params.subtestsState } : {}),
       })
       .eq('id', params.simulationId);
   } catch {

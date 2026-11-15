@@ -1,6 +1,13 @@
-import fs from 'fs';
-import path from 'path';
 import { Question, TestType } from '@/types/test';
+import penalaranUmum from '@/data/seed/utbk/penalaran-umum.json';
+import penalaranMatematika from '@/data/seed/utbk/penalaran-matematika.json';
+import literasiBahasaIndonesia from '@/data/seed/utbk/literasi-bahasa-indonesia.json';
+import literasiBahasaInggris from '@/data/seed/utbk/literasi-bahasa-inggris.json';
+import pengetahuanKuantitatif from '@/data/seed/utbk/pengetahuan-kuantitatif.json';
+import pemahamanBacaanMenulis from '@/data/seed/utbk/pemahaman-bacaan-menulis.json';
+import tpaVerbal from '@/data/seed/tpa/verbal.json';
+import tpaNumerik from '@/data/seed/tpa/numerik.json';
+import tpaFigural from '@/data/seed/tpa/figural.json';
 
 export interface RawSeedQuestion {
   test_type: TestType;
@@ -16,44 +23,27 @@ export interface RawSeedQuestion {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-const SUBTEST_FILE_MAP: Record<string, { folder: 'utbk' | 'tpa'; file: string }> = {
-  penalaran_umum: { folder: 'utbk', file: 'penalaran-umum.json' },
-  penalaran_matematika: { folder: 'utbk', file: 'penalaran-matematika.json' },
-  literasi_bahasa_indonesia: { folder: 'utbk', file: 'literasi-bahasa-indonesia.json' },
-  literasi_bahasa_inggris: { folder: 'utbk', file: 'literasi-bahasa-inggris.json' },
-  pengetahuan_kuantitatif: { folder: 'utbk', file: 'pengetahuan-kuantitatif.json' },
-  pemahaman_bacaan_menulis: { folder: 'utbk', file: 'pemahaman-bacaan-menulis.json' },
-  verbal: { folder: 'tpa', file: 'verbal.json' },
-  numerik: { folder: 'tpa', file: 'numerik.json' },
-  figural: { folder: 'tpa', file: 'figural.json' },
+const SUBTEST_SEED_MAP: Record<string, RawSeedQuestion[]> = {
+  penalaran_umum: penalaranUmum as RawSeedQuestion[],
+  penalaran_matematika: penalaranMatematika as RawSeedQuestion[],
+  literasi_bahasa_indonesia: literasiBahasaIndonesia as RawSeedQuestion[],
+  literasi_bahasa_inggris: literasiBahasaInggris as RawSeedQuestion[],
+  pengetahuan_kuantitatif: pengetahuanKuantitatif as RawSeedQuestion[],
+  pemahaman_bacaan_menulis: pemahamanBacaanMenulis as RawSeedQuestion[],
+  verbal: tpaVerbal as RawSeedQuestion[],
+  numerik: tpaNumerik as RawSeedQuestion[],
+  figural: tpaFigural as RawSeedQuestion[],
 };
 
 export function getSeedQuestions(subtest: string, locale: 'id' | 'en' = 'id'): (RawSeedQuestion & { id: string })[] {
-  const mapEntry = SUBTEST_FILE_MAP[subtest];
-  if (!mapEntry) return [];
+  void locale;
+  const rawList = SUBTEST_SEED_MAP[subtest];
+  if (!rawList || rawList.length === 0) return [];
 
-  const filePath = path.join(
-    process.cwd(),
-    'src',
-    'data',
-    'seed',
-    mapEntry.folder,
-    mapEntry.file
-  );
-
-  try {
-    if (!fs.existsSync(filePath)) return [];
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const rawList: RawSeedQuestion[] = JSON.parse(content);
-
-    return rawList.map((item, idx) => ({
-      ...item,
-      id: `q_${subtest}_${idx + 1}`,
-    }));
-  } catch (err) {
-    console.error('Failed reading seed questions:', err);
-    return [];
-  }
+  return rawList.map((item, idx) => ({
+    ...item,
+    id: `q_${subtest}_${idx + 1}`,
+  }));
 }
 
 export function toClientQuestion(

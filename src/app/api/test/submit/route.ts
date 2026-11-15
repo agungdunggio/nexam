@@ -128,6 +128,11 @@ export async function POST(request: NextRequest) {
       correctCount,
       wrongCount,
       unansweredCount,
+      items: reviewItems.map((item) => ({
+        isCorrect: item.is_correct,
+        isAnswered: item.user_answer !== null,
+        difficulty: item.difficulty,
+      })),
     });
 
     const { percentile, comparison, score_distribution } = await buildComparisonStats(

@@ -336,7 +336,9 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
           >
             <span>
               {isLastQuestion
-                ? 'Selesai & Kumpulkan'
+                ? unansweredCount > 0
+                  ? `Cek ${unansweredCount} Soal Kosong`
+                  : 'Tinjau & Kumpulkan'
                 : hasAnsweredCurrent
                 ? 'Lanjutkan'
                 : 'Lewati Soal'}
@@ -459,6 +461,14 @@ export function TestSessionView({ sessionId, testType }: TestSessionViewProps) {
         totalQuestions={totalQuestions}
         isSubmitting={isSubmitting}
         onConfirm={handleManualSubmit}
+        testType={testType}
+        unansweredNumbers={Array.from({ length: totalQuestions }, (_, idx) => idx + 1).filter(
+          (num) => !answeredIndices.has(num - 1)
+        )}
+        flaggedNumbers={Array.from(flaggedSet)
+          .map((idx) => idx + 1)
+          .sort((a, b) => a - b)}
+        onJumpToQuestion={(num) => goToQuestion(num - 1)}
       />
 
       <AutoSubmitWarning

@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
         questionId: q.id,
         userAnswer: userAns || null,
         isCorrect,
+        difficulty: q.difficulty,
       };
     });
 
@@ -99,6 +100,11 @@ export async function POST(request: NextRequest) {
       correctCount,
       wrongCount,
       unansweredCount,
+      items: answersToSave.map((item) => ({
+        isCorrect: item.isCorrect,
+        isAnswered: item.userAnswer !== null,
+        difficulty: item.difficulty,
+      })),
     });
 
     const finishedAt = new Date().toISOString();

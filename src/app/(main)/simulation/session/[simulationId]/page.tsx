@@ -246,15 +246,21 @@ export default function SimulationSessionPage({ params }: PageProps) {
   const currentQuestion = activeSubtest.questions[currentQuestionIndex];
   const totalQuestions = activeSubtest.questions.length;
   const answeredCount = Object.keys(answers).length;
+  const unansweredIndices = activeSubtest.questions
+    .map((q, idx) => (!answers[q.id] ? idx : -1))
+    .filter((idx) => idx !== -1);
+  const flaggedList = Array.from(flaggedIndices).sort((a, b) => a - b);
+  const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
+  const hasUnanswered = unansweredIndices.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col pb-24">
       {/* Simulation Top Bar */}
       <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-200 dark:border-slate-800">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Subtest Information & Step Indicators */}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
               {UTBK_SIMULATION_SUBTESTS.map((sub, idx) => {
                 const isPassed = idx < currentSubtestIndex;
                 const isCurrent = idx === currentSubtestIndex;
@@ -284,10 +290,10 @@ export default function SimulationSessionPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Right Action: Subtest Timer & Navigator Button */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Right Action: Subtest Timer, Navigator Button & Safe Subtest Lock in Header */}
+          <div className="flex items-center gap-2 shrink-0">
             <div
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 font-mono font-black text-xs sm:text-sm transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border-2 font-mono font-black text-xs sm:text-sm transition-colors ${
                 remainingSec < 120
                   ? 'border-rose-400 bg-rose-50 dark:bg-rose-950/60 text-rose-600 animate-pulse'
                   : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
@@ -303,12 +309,33 @@ export default function SimulationSessionPage({ params }: PageProps) {
                 playPop();
                 setNavModalOpen(true);
               }}
-              className="h-9 px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"
+              className="h-9 px-2.5 sm:px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5"
+              title="Buka Peta Soal"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Peta Soal</span>
+              <span className="hidden md:inline">Peta Soal</span>
               <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-600">
                 {answeredCount}/{totalQuestions}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playPop();
+                setConfirmNextOpen(true);
+              }}
+              disabled={advancing}
+              className="h-9 px-2.5 sm:px-3.5 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-extrabold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 transition-colors disabled:opacity-50 whitespace-nowrap"
+              title={isLastSubtest ? 'Kumpulkan seluruh simulasi' : 'Kunci subtes & lanjut ke subtes berikutnya'}
+            >
+              {advancing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Lock className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden sm:inline">
+                {isLastSubtest ? 'Kumpulkan' : 'Selesai Subtes'}
               </span>
             </button>
           </div>
@@ -340,7 +367,7 @@ export default function SimulationSessionPage({ params }: PageProps) {
         )}
       </main>
 
-      {/* Bottom Sticky Action Footer */}
+      {/* Bottom Sticky Action Footer — Question Navigation Only */}
       <footer className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t-2 border-slate-200 dark:border-slate-800 p-3 sm:p-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
           <button
@@ -353,96 +380,196 @@ export default function SimulationSessionPage({ params }: PageProps) {
             className="h-11 sm:h-12 px-4 sm:px-5 rounded-2xl duo-button-outline text-xs sm:text-sm font-bold flex items-center gap-1.5 disabled:opacity-40"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Sebelumnya</span>
+            <span>Sebelumnya</span>
           </button>
 
           <div className="flex items-center gap-2">
-            {currentQuestionIndex < totalQuestions - 1 ? (
+            {!isLastQuestion ? (
               <button
                 type="button"
                 onClick={() => {
                   playPop();
                   setCurrentQuestionIndex((prev) => Math.min(totalQuestions - 1, prev + 1));
                 }}
-                className="h-11 sm:h-12 px-5 sm:px-7 rounded-2xl duo-button-outline text-xs sm:text-sm font-black flex items-center gap-1.5"
+                className="h-11 sm:h-12 px-6 sm:px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition-transform active:scale-95"
               >
                 <span>Soal Berikutnya</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
               </button>
-            ) : null}
-
-            {/* Advance Subtest Button */}
-            <button
-              type="button"
-              onClick={() => {
-                playPop();
-                setConfirmNextOpen(true);
-              }}
-              disabled={advancing}
-              className={`h-11 sm:h-12 px-5 sm:px-8 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 shadow-lg transition-transform active:scale-95 ${
-                isLastSubtest
-                  ? 'duo-button-green shadow-emerald-500/25'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/25'
-              }`}
-            >
-              {advancing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    {isLastSubtest ? 'Selesai & Kumpulkan Simulasi' : 'Kunci & Lanjut Subtes'}
-                  </span>
-                  <ArrowRight className="w-4 h-4 stroke-[3]" />
-                </>
-              )}
-            </button>
+            ) : hasUnanswered ? (
+              <button
+                type="button"
+                onClick={() => {
+                  playPop();
+                  setConfirmNextOpen(true);
+                }}
+                disabled={advancing}
+                className="h-11 sm:h-12 px-5 sm:px-7 rounded-2xl border-2 border-b-4 border-amber-400 bg-amber-50 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-black flex items-center gap-2 transition-all active:translate-y-[1px]"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                <span>Cek {unansweredIndices.length} Soal Kosong</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  playPop();
+                  setConfirmNextOpen(true);
+                }}
+                disabled={advancing}
+                className="h-11 sm:h-12 px-6 sm:px-8 rounded-2xl duo-button-green text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-500/25 transition-transform active:scale-95"
+              >
+                <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                <span>
+                  {isLastSubtest ? 'Tinjau & Kumpulkan' : 'Tinjau & Kunci Subtes'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </footer>
 
-      {/* Confirmation Modal to Advance Subtest */}
+      {/* Confirmation & Unanswered Review Modal */}
       <Dialog open={confirmNextOpen} onOpenChange={setConfirmNextOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl p-6 sm:p-8 border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
           <DialogHeader className="pr-10 text-left space-y-2">
-            <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
-              <Lock className="w-5 h-5" />
+            <div
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black ${
+                hasUnanswered
+                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400'
+                  : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
+              }`}
+            >
+              {hasUnanswered ? <AlertTriangle className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
             </div>
             <DialogTitle className="text-lg font-black text-slate-900 dark:text-white">
-              {isLastSubtest ? 'Kumpulkan Seluruh Simulasi?' : 'Beralih ke Subtes Berikutnya?'}
+              {hasUnanswered
+                ? `Masih Ada ${unansweredIndices.length} Soal Kosong`
+                : isLastSubtest
+                ? 'Kumpulkan Seluruh Simulasi?'
+                : 'Kunci & Lanjut ke Subtes Berikutnya?'}
             </DialogTitle>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              {isLastSubtest
-                ? 'Semua 6 subtes simulasi telah selesai dikerjakan. Hasil evaluasi dan skor komposit UTBK akan langsung dihitung.'
-                : 'Sesuai aturan resmi CBT, subtes saat ini akan dikunci permanen. Kamu tidak dapat kembali mengubah jawaban subtes ini setelah beralih.'}
+              {hasUnanswered
+                ? 'Di UTBK tidak ada pengurangan nilai untuk jawaban salah. Sebaiknya isi semua soal sebelum subtes dikunci permanen.'
+                : isLastSubtest
+                ? 'Semua 6 subtes simulasi telah selesai dikerjakan. Skor IRT komposit UTBK akan langsung dihitung.'
+                : 'Sesuai aturan resmi CBT, subtes saat ini akan dikunci permanen dan kamu tidak bisa kembali ke subtes ini.'}
             </p>
           </DialogHeader>
 
-          <div className="my-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
-            <span>Progress Subtes Ini:</span>
-            <span className="font-mono font-bold text-indigo-600">
-              {answeredCount} dari {totalQuestions} Soal Terjawab
-            </span>
+          <div className="my-3 space-y-3">
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+              <span>Progress Subtes Ini:</span>
+              <span
+                className={`font-mono font-bold ${
+                  hasUnanswered ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                }`}
+              >
+                {answeredCount} dari {totalQuestions} Soal Terjawab
+              </span>
+            </div>
+
+            {hasUnanswered && (
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/70 space-y-2">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                  Klik nomor untuk mengisi soal:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {unansweredIndices.map((idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        playPop();
+                        setCurrentQuestionIndex(idx);
+                        setConfirmNextOpen(false);
+                      }}
+                      className="h-8 min-w-[36px] px-2.5 rounded-lg border-2 border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 font-mono text-xs font-black text-amber-700 dark:text-amber-300 hover:bg-amber-100 transition-colors"
+                    >
+                      #{idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {flaggedList.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                  <Bookmark className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>Ditandai ragu-ragu:</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {flaggedList.map((idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        playPop();
+                        setCurrentQuestionIndex(idx);
+                        setConfirmNextOpen(false);
+                      }}
+                      className="h-8 min-w-[36px] px-2.5 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs font-black text-slate-700 dark:text-slate-300 hover:border-amber-400 transition-colors"
+                    >
+                      #{idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <DialogFooter className="pt-2 flex flex-row gap-2.5">
-            <button
-              type="button"
-              onClick={() => setConfirmNextOpen(false)}
-              className="flex-1 h-11 rounded-xl duo-button-outline text-xs font-bold"
-            >
-              Periksa Lagi
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAdvance(false)}
-              disabled={advancing}
-              className="flex-1 h-11 rounded-xl duo-button-green text-xs font-black uppercase tracking-wider"
-            >
-              {isLastSubtest ? 'Kumpulkan' : 'Ya, Lanjutkan'}
-            </button>
+          <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2.5">
+            {hasUnanswered ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playPop();
+                    setCurrentQuestionIndex(unansweredIndices[0]);
+                    setConfirmNextOpen(false);
+                  }}
+                  className="flex-1 h-11 rounded-xl duo-button-green text-xs font-black uppercase tracking-wider"
+                >
+                  Isi Soal #{unansweredIndices[0] + 1}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAdvance(false)}
+                  disabled={advancing}
+                  className="flex-1 h-11 rounded-xl duo-button-outline text-xs font-bold text-slate-600 dark:text-slate-300"
+                >
+                  {advancing
+                    ? 'Menyimpan...'
+                    : isLastSubtest
+                    ? 'Tetap Kumpulkan'
+                    : 'Tetap Kunci Subtes'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setConfirmNextOpen(false)}
+                  className="flex-1 h-11 rounded-xl duo-button-outline text-xs font-bold"
+                >
+                  Periksa Lagi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAdvance(false)}
+                  disabled={advancing}
+                  className="flex-1 h-11 rounded-xl duo-button-green text-xs font-black uppercase tracking-wider"
+                >
+                  {advancing
+                    ? 'Menyimpan...'
+                    : isLastSubtest
+                    ? 'Kumpulkan'
+                    : 'Ya, Kunci & Lanjut'}
+                </button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -536,6 +663,21 @@ export default function SimulationSessionPage({ params }: PageProps) {
               <span className="w-3 h-3 rounded-md bg-slate-300 dark:bg-slate-700" />
               <span>Belum</span>
             </div>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                playPop();
+                setNavModalOpen(false);
+                setConfirmNextOpen(true);
+              }}
+              className="w-full h-11 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-xs font-extrabold text-indigo-700 dark:text-indigo-300 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>{isLastSubtest ? 'Tinjau & Kumpulkan Simulasi...' : 'Tinjau & Kunci Subtes...'}</span>
+            </button>
           </div>
         </DialogContent>
       </Dialog>

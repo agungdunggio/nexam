@@ -2,20 +2,38 @@
 
 import { useState } from 'react';
 import { AnswerReviewItem } from '@/types/results';
+import { TestType } from '@/types/test';
+import { getQuestionIrtWeight } from '@/lib/scoring';
 import { BookOpen, CheckCircle2, MinusCircle, XCircle } from 'lucide-react';
 import { useLanguageStore } from '@/stores/languageStore';
 
 interface AnswerReviewProps {
   answers?: AnswerReviewItem[];
+  testType?: TestType;
 }
 
 type FilterMode = 'all' | 'correct' | 'wrong' | 'unanswered';
+
+const DIFFICULTY_LABELS: Record<string, { label: string; style: string }> = {
+  easy: {
+    label: 'Mudah',
+    style: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
+  },
+  medium: {
+    label: 'Sedang',
+    style: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
+  },
+  hard: {
+    label: 'Sulit',
+    style: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800',
+  },
+};
 
 /**
  * Tactile Duolingo-style answer review with standalone pressable filter tabs,
  * lesson-map question navigator, and flush two-zone question cards.
  */
-export function AnswerReview({ answers = [] }: AnswerReviewProps) {
+export function AnswerReview({ answers = [], testType }: AnswerReviewProps) {
   const { t } = useLanguageStore();
   const [filter, setFilter] = useState<FilterMode>('all');
 
@@ -165,17 +183,28 @@ export function AnswerReview({ answers = [] }: AnswerReviewProps) {
         <div className="space-y-4">
           {filteredAnswers.map((item) => {
             const isAnswered = item.user_answer !== null;
+            const irtWeight = getQuestionIrtWeight(item.difficulty);
+            const difficultyMeta = item.difficulty
+              ? DIFFICULTY_LABELS[item.difficulty.toLowerCase()]
+              : undefined;
+
             let statusClass = 'text-slate-500 dark:text-slate-400';
-            let statusText = 'Kosong';
+            let statusText = testType ? 'Kosong (0)' : 'Kosong';
             let StatusIcon = MinusCircle;
 
             if (item.is_correct) {
               statusClass = 'text-emerald-700 dark:text-emerald-400';
-              statusText = 'Benar (+1)';
+              statusText =
+                testType === 'tpa'
+                  ? 'Benar (+4)'
+                  : testType === 'utbk'
+                  ? `Benar · Bobot ${irtWeight}x`
+                  : 'Benar';
               StatusIcon = CheckCircle2;
             } else if (isAnswered) {
               statusClass = 'text-rose-700 dark:text-rose-400';
-              statusText = 'Salah';
+              statusText =
+                testType === 'tpa' ? 'Salah (-1)' : testType === 'utbk' ? 'Salah (0)' : 'Salah';
               StatusIcon = XCircle;
             }
 
@@ -189,13 +218,20 @@ export function AnswerReview({ answers = [] }: AnswerReviewProps) {
               >
                 <div className="p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-3 mb-3.5">
-                    <div className="inline-flex items-center gap-2">
+                    <div className="inline-flex items-center gap-2 flex-wrap">
                       <span className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 text-[#5248e5] dark:text-indigo-300 font-mono text-xs font-extrabold inline-flex items-center justify-center tabular-nums">
                         {paddedNum}
                       </span>
                       <span className="text-[13px] font-extrabold text-[#13192b] dark:text-white">
                         Soal #{item.number}
                       </span>
+                      {difficultyMeta && (
+                        <span
+                          className={`px-2 py-0.5 rounded-md border text-[11px] font-bold ${difficultyMeta.style}`}
+                        >
+                          {difficultyMeta.label}
+                        </span>
+                      )}
                     </div>
 
                     <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold ${statusClass}`}>

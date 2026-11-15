@@ -102,7 +102,7 @@ export default function ResultsPage({ params }: PageProps) {
       </div>
 
       {/* Answer Review & Explanations */}
-      <AnswerReview answers={result.answers} />
+      <AnswerReview answers={result.answers} testType={result.test_type} />
     </div>
   );
 }

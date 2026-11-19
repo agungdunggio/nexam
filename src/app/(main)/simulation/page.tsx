@@ -62,7 +62,10 @@ export default function SimulationHubPage() {
             <span>Format Resmi Simulasi UTBK</span>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono text-slate-300">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono text-slate-300">
+            <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl">
+              Paket Soal V2
+            </span>
             <span className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl">
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
               {UTBK_SIMULATION_SUBTESTS.length} Subtes

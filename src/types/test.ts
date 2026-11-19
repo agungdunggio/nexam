@@ -1,5 +1,7 @@
 export type TestType = 'utbk' | 'tpa';
 
+export type QuestionVersion = 'v1' | 'v2';
+
 export type UTBKSubtest =
   | 'penalaran_umum'
   | 'penalaran_matematika'
@@ -36,6 +38,7 @@ export interface TestSession {
   userId?: string;
   testType: TestType;
   subtest: string;
+  version?: QuestionVersion;
   timeLimitSec: number;
   startedAt: string;
   finishedAt?: string | null;
@@ -45,6 +48,7 @@ export interface TestSession {
 export interface StartTestRequest {
   test_type: TestType;
   subtest: string;
+  version?: QuestionVersion;
 }
 
 export interface UserAnswerInput {
@@ -64,6 +68,8 @@ export interface SubtestMeta {
   name_en: string;
   questionCount: number;
   seedCount: number;
+  v1Count?: number;
+  v2Count?: number;
   timeLimitSec: number;
   icon: string;
   description_id?: string;

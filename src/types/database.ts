@@ -50,6 +50,7 @@ export interface Database {
           explanation_en: string | null;
           difficulty: 'easy' | 'medium' | 'hard';
           image_url: string | null;
+          version: 'v1' | 'v2';
           created_at: string;
         };
         Insert: {
@@ -66,6 +67,7 @@ export interface Database {
           explanation_en?: string | null;
           difficulty?: 'easy' | 'medium' | 'hard';
           image_url?: string | null;
+          version?: 'v1' | 'v2';
           created_at?: string;
         };
         Update: {
@@ -82,6 +84,7 @@ export interface Database {
           explanation_en?: string | null;
           difficulty?: 'easy' | 'medium' | 'hard';
           image_url?: string | null;
+          version?: 'v1' | 'v2';
           created_at?: string;
         };
       };
@@ -91,6 +94,7 @@ export interface Database {
           user_id: string;
           test_type: 'utbk' | 'tpa';
           subtest: string;
+          version: 'v1' | 'v2';
           status: 'in_progress' | 'completed' | 'timed_out';
           started_at: string;
           finished_at: string | null;
@@ -102,6 +106,7 @@ export interface Database {
           user_id: string;
           test_type: 'utbk' | 'tpa';
           subtest: string;
+          version?: 'v1' | 'v2';
           status?: 'in_progress' | 'completed' | 'timed_out';
           started_at?: string;
           finished_at?: string | null;
@@ -113,6 +118,7 @@ export interface Database {
           user_id?: string;
           test_type?: 'utbk' | 'tpa';
           subtest?: string;
+          version?: 'v1' | 'v2';
           status?: 'in_progress' | 'completed' | 'timed_out';
           started_at?: string;
           finished_at?: string | null;

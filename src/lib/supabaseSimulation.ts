@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getSeedQuestions, RawSeedQuestion } from '@/lib/seedLoader';
 import { simulationsCache } from '@/lib/sessionStore';
 import { StoredSimulationSession } from '@/lib/simulationConfig';
+import { QuestionVersion } from '@/types/test';
 
 export function isValidUUID(str: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
@@ -14,10 +15,12 @@ const questionsCache = new Map<string, (RawSeedQuestion & { id: string })[]>();
  * Uses in-memory caching to avoid redundant network queries during a session.
  */
 export async function fetchQuestionsForSubtest(
-  subtest: string
+  subtest: string,
+  version: QuestionVersion = 'v2'
 ): Promise<(RawSeedQuestion & { id: string })[]> {
-  if (questionsCache.has(subtest)) {
-    return questionsCache.get(subtest)!;
+  const cacheKey = `${subtest}:${version}`;
+  if (questionsCache.has(cacheKey)) {
+    return questionsCache.get(cacheKey)!;
   }
 
   try {
@@ -26,6 +29,7 @@ export async function fetchQuestionsForSubtest(
       .from('questions')
       .select('*')
       .eq('subtest', subtest)
+      .eq('version', version)
       .order('created_at', { ascending: true })
       .order('id', { ascending: true });
 
@@ -43,16 +47,17 @@ export async function fetchQuestionsForSubtest(
         explanation_id: q.explanation_id || '',
         explanation_en: q.explanation_en || undefined,
         difficulty: q.difficulty || 'medium',
+        version: q.version || version,
       }));
 
-      questionsCache.set(subtest, mapped);
+      questionsCache.set(cacheKey, mapped);
       return mapped;
     }
   } catch (err) {
     console.warn('[Supabase] Failed to fetch questions, using seed fallback:', err);
   }
 
-  const fallback = getSeedQuestions(subtest);
+  const fallback = getSeedQuestions(subtest, 'id', version);
   return fallback;
 }
 

@@ -1,4 +1,4 @@
-import { TestType } from '@/types/test';
+import { QuestionVersion, TestType } from '@/types/test';
 import { TestResult } from '@/types/results';
 import { StoredSimulationSession } from '@/lib/simulationConfig';
 
@@ -7,6 +7,7 @@ export interface StoredSession {
   user_id: string;
   test_type: TestType;
   subtest: string;
+  version?: QuestionVersion;
   time_limit_sec: number;
   started_at: string;
   finished_at: string | null;

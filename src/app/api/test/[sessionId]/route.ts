@@ -21,7 +21,7 @@ export async function GET(
       );
     }
 
-    const rawQuestions = await fetchQuestionsForSubtest(session.subtest);
+    const rawQuestions = await fetchQuestionsForSubtest(session.subtest, session.version || 'v1');
     const orderedQuestions = orderQuestionsByIds(rawQuestions, session.question_ids);
     const clientQuestions = orderedQuestions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Question, TestSession, TestType } from '@/types/test';
+import { Question, QuestionVersion, TestSession, TestType } from '@/types/test';
 
 interface TestState {
   session: TestSession | null;
@@ -13,7 +13,7 @@ interface TestState {
   flaggedQuestions: number[]; // array of question indices
 
   // Actions
-  startTest: (testType: TestType, subtest: string) => Promise<string | null>;
+  startTest: (testType: TestType, subtest: string, version?: QuestionVersion) => Promise<string | null>;
   clearError: () => void;
   setAnswer: (questionId: string, answer: string) => void;
   removeAnswer: (questionId: string) => void;
@@ -40,13 +40,13 @@ export const useTestStore = create<TestState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  startTest: async (testType: TestType, subtest: string) => {
+  startTest: async (testType: TestType, subtest: string, version: QuestionVersion = 'v2') => {
     set({ isLoading: true, error: null });
     try {
       const res = await fetch('/api/test/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test_type: testType, subtest }),
+        body: JSON.stringify({ test_type: testType, subtest, version }),
       });
 
       const data = await res.json();
@@ -55,6 +55,7 @@ export const useTestStore = create<TestState>((set, get) => ({
           id: data.session.id,
           testType: data.session.test_type,
           subtest: data.session.subtest,
+          version: data.session.version || version,
           timeLimitSec: data.session.time_limit_sec,
           startedAt: data.session.started_at,
           status: 'in_progress',

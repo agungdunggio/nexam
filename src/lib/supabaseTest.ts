@@ -169,6 +169,7 @@ export async function saveTestSessionToSupabase(session: StoredSession): Promise
       user_id: session.user_id,
       test_type: session.test_type,
       subtest: session.subtest,
+      version: session.version || 'v2',
       status: session.status,
       time_limit_sec: session.time_limit_sec,
       question_ids: session.question_ids,
@@ -221,6 +222,7 @@ export async function loadTestSession(sessionId: string): Promise<StoredSession 
       user_id: sessionRow.user_id,
       test_type: sessionRow.test_type,
       subtest: sessionRow.subtest,
+      version: sessionRow.version === 'v2' ? 'v2' : 'v1',
       time_limit_sec: sessionRow.time_limit_sec,
       started_at: sessionRow.started_at,
       finished_at: sessionRow.finished_at,
@@ -330,7 +332,7 @@ export async function loadTestResult(sessionId: string): Promise<TestResult | nu
     if (error || !resultRow) return null;
 
     const session = await loadTestSession(sessionId);
-    const rawQuestions = await fetchQuestionsForSubtest(resultRow.subtest);
+    const rawQuestions = await fetchQuestionsForSubtest(resultRow.subtest, session?.version || 'v1');
     const orderedQuestions = orderQuestionsByIds(rawQuestions, session?.question_ids);
 
     const { data: answerRows } = await (supabase as any)

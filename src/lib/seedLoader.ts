@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Question, TestType } from '@/types/test';
+import { Question, QuestionVersion, TestType } from '@/types/test';
 
 export interface RawSeedQuestion {
   test_type: TestType;
@@ -14,6 +14,7 @@ export interface RawSeedQuestion {
   explanation_id: string;
   explanation_en?: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  version?: QuestionVersion;
 }
 
 const SUBTEST_SEED_FILES: Record<string, string> = {
@@ -35,22 +36,27 @@ const SUBTEST_SEED_FILES: Record<string, string> = {
  */
 export function getSeedQuestions(
   subtest: string,
-  locale: 'id' | 'en' = 'id'
+  locale: 'id' | 'en' = 'id',
+  version: QuestionVersion = 'v2'
 ): (RawSeedQuestion & { id: string })[] {
   void locale;
   const relPath = SUBTEST_SEED_FILES[subtest];
   if (!relPath) return [];
 
   try {
-    const fullPath = path.join(/* turbopackIgnore: true */ process.cwd(), 'src', 'data', 'seed', relPath);
+    const baseDir = path.join(/* turbopackIgnore: true */ process.cwd(), 'src', 'data', 'seed');
+    const versionedPath = version === 'v2' ? path.join(baseDir, 'v2', relPath) : path.join(baseDir, relPath);
+    const fullPath = fs.existsSync(versionedPath) ? versionedPath : path.join(baseDir, relPath);
     if (!fs.existsSync(fullPath)) return [];
     const rawJson = fs.readFileSync(fullPath, 'utf8');
     const rawList = JSON.parse(rawJson) as RawSeedQuestion[];
     if (!Array.isArray(rawList) || rawList.length === 0) return [];
 
+    const idPrefix = version === 'v2' ? `q_${subtest}_v2` : `q_${subtest}`;
     return rawList.map((item, idx) => ({
       ...item,
-      id: `q_${subtest}_${idx + 1}`,
+      version,
+      id: `${idPrefix}_${idx + 1}`,
     }));
   } catch {
     return [];

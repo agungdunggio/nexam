@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rawQuestions = await fetchQuestionsForSubtest(session.subtest);
+    const rawQuestions = await fetchQuestionsForSubtest(session.subtest, session.version || 'v1');
     const questions = orderQuestionsByIds(rawQuestions, session.question_ids);
     const answersMap = new Map<string, string | null>();
     answers.forEach((item: { question_id: string; answer: string | null }) => {

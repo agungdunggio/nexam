@@ -8,13 +8,14 @@ import { useTestStore } from '@/stores/testStore';
 import { DuolingoMascot } from '@/components/common/DuolingoMascot';
 import { SubtestIconRenderer } from '@/components/icons/SubtestIcons';
 import { playDing, playPop } from '@/lib/soundEffects';
-import { TestType } from '@/types/test';
-import { GraduationCap, Sparkles, Clock, ArrowRight, Loader2, Zap } from 'lucide-react';
+import { QuestionVersion, TestType } from '@/types/test';
+import { GraduationCap, Sparkles, Clock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function DuolingoSelectTestPage() {
   const router = useRouter();
   const { startTest, isLoading, error, clearError } = useTestStore();
   const [selectedTrack, setSelectedTrack] = useState<TestType>('utbk');
+  const [selectedVersion, setSelectedVersion] = useState<QuestionVersion>('v2');
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
 
   const handleSelectTrack = (track: TestType) => {
@@ -23,10 +24,16 @@ export default function DuolingoSelectTestPage() {
     setSelectedTrack(track);
   };
 
+  const handleSelectVersion = (version: QuestionVersion) => {
+    playPop();
+    clearError();
+    setSelectedVersion(version);
+  };
+
   const handleStartSubtest = async (track: TestType, subtestKey: string) => {
     playDing();
     setLoadingKey(subtestKey);
-    const sessionId = await startTest(track, subtestKey);
+    const sessionId = await startTest(track, subtestKey, selectedVersion);
     if (sessionId) {
       router.push(`/test/${track}/${sessionId}`);
     } else {
@@ -71,79 +78,130 @@ export default function DuolingoSelectTestPage() {
         </div>
       </div>
 
-      {/* Responsive Track Switcher (Smooth Sliding Pill Tab with Perfect Padding) */}
-      <div className="relative max-w-2xl mx-auto mb-8 p-1.5 rounded-2xl sm:rounded-full bg-slate-100/90 dark:bg-slate-800/80 border-2 border-slate-200/90 dark:border-slate-700/80 shadow-sm select-none">
-        {/* Sliding Indicator Background Pill (Grid-based 50/50 with zero overflow) */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-1.5 grid grid-cols-2 pointer-events-none"
-        >
+      {/* Track Switcher + Minimal Version Switcher in 1 Row */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 mb-8">
+        {/* Responsive Track Switcher (Smooth Sliding Pill Tab with Perfect Padding) */}
+        <div className="relative w-full md:flex-1 md:max-w-2xl p-1.5 rounded-2xl sm:rounded-full bg-slate-100/90 dark:bg-slate-800/80 border-2 border-slate-200/90 dark:border-slate-700/80 shadow-sm select-none">
+          {/* Sliding Indicator Background Pill (Grid-based 50/50 with zero overflow) */}
           <div
-            className={`h-full w-full rounded-xl sm:rounded-full bg-indigo-600 border-b-4 border-indigo-800 shadow-md shadow-indigo-500/25 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-              selectedTrack === 'utbk' ? 'translate-x-0' : 'translate-x-full'
-            }`}
-          />
+            aria-hidden="true"
+            className="absolute inset-1.5 grid grid-cols-2 pointer-events-none"
+          >
+            <div
+              className={`h-full w-full rounded-xl sm:rounded-full bg-indigo-600 border-b-4 border-indigo-800 shadow-md shadow-indigo-500/25 transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                selectedTrack === 'utbk' ? 'translate-x-0' : 'translate-x-full'
+              }`}
+            />
+          </div>
+
+          {/* Buttons (Interactive Layer) */}
+          <div className="relative z-10 grid grid-cols-2">
+            <button
+              type="button"
+              onClick={() => handleSelectTrack('utbk')}
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3 px-3 sm:px-5 rounded-xl sm:rounded-full font-black text-xs sm:text-sm transition-colors duration-200 focus:outline-none ${
+                selectedTrack === 'utbk'
+                  ? 'text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" />
+                <span className="tracking-tight uppercase whitespace-nowrap">
+                  <span className="sm:hidden">UTBK / SNBT</span>
+                  <span className="hidden sm:inline">UTBK / SNBT 2026</span>
+                </span>
+              </div>
+              <span
+                className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full whitespace-nowrap transition-colors duration-200 ${
+                  selectedTrack === 'utbk'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                6 Subtes
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectTrack('tpa')}
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3 px-3 sm:px-5 rounded-xl sm:rounded-full font-black text-xs sm:text-sm transition-colors duration-200 focus:outline-none ${
+                selectedTrack === 'tpa'
+                  ? 'text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Sparkles
+                  className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 transition-colors duration-200 ${
+                    selectedTrack === 'tpa' ? 'text-amber-300' : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                />
+                <span className="tracking-tight uppercase whitespace-nowrap">
+                  <span className="sm:hidden">TPA AKADEMIK</span>
+                  <span className="hidden sm:inline">Tes Potensi Akademik</span>
+                </span>
+              </div>
+              <span
+                className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full whitespace-nowrap transition-colors duration-200 ${
+                  selectedTrack === 'tpa'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                3 Subtes
+              </span>
+            </button>
+          </div>
         </div>
 
-        {/* Buttons (Interactive Layer) */}
-        <div className="relative z-10 grid grid-cols-2">
-          <button
-            type="button"
-            onClick={() => handleSelectTrack('utbk')}
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3.5 px-3 sm:px-6 rounded-xl sm:rounded-full font-black text-xs sm:text-sm transition-colors duration-200 focus:outline-none ${
-              selectedTrack === 'utbk'
-                ? 'text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
+        {/* Minimal Sliding Version Pill Switcher (Right) */}
+        <div
+          className="relative p-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border-2 border-slate-200/90 dark:border-slate-700/80 shadow-sm select-none shrink-0"
+          role="group"
+          aria-label="Pilih versi paket soal"
+        >
+          {/* Sliding Indicator Background Pill */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-1.5 grid grid-cols-2 pointer-events-none"
           >
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <GraduationCap className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" />
-              <span className="tracking-tight uppercase whitespace-nowrap">
-                <span className="sm:hidden">UTBK / SNBT</span>
-                <span className="hidden sm:inline">UTBK / SNBT 2026</span>
-              </span>
-            </div>
-            <span
-              className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full whitespace-nowrap transition-colors duration-200 ${
-                selectedTrack === 'utbk'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300'
+            <div
+              className={`h-full w-full rounded-full border-b-4 shadow-md transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                selectedVersion === 'v2'
+                  ? 'translate-x-0 bg-emerald-500 border-emerald-700 shadow-emerald-500/25'
+                  : 'translate-x-full bg-slate-800 dark:bg-slate-200 border-slate-950 dark:border-slate-400 shadow-slate-500/20'
               }`}
-            >
-              6 Subtes
-            </span>
-          </button>
+            />
+          </div>
 
-          <button
-            type="button"
-            onClick={() => handleSelectTrack('tpa')}
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3.5 px-3 sm:px-6 rounded-xl sm:rounded-full font-black text-xs sm:text-sm transition-colors duration-200 focus:outline-none ${
-              selectedTrack === 'tpa'
-                ? 'text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Sparkles
-                className={`w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 transition-colors duration-200 ${
-                  selectedTrack === 'tpa' ? 'text-amber-300' : 'text-slate-400 dark:text-slate-500'
-                }`}
-              />
-              <span className="tracking-tight uppercase whitespace-nowrap">
-                <span className="sm:hidden">TPA AKADEMIK</span>
-                <span className="hidden sm:inline">Tes Potensi Akademik</span>
-              </span>
-            </div>
-            <span
-              className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full whitespace-nowrap transition-colors duration-200 ${
-                selectedTrack === 'tpa'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300'
+          <div className="relative z-10 grid grid-cols-2">
+            <button
+              type="button"
+              title="Paket V2 • Terbaru (Full Set)"
+              onClick={() => handleSelectVersion('v2')}
+              className={`px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider transition-colors duration-200 focus:outline-none ${
+                selectedVersion === 'v2'
+                  ? 'text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              3 Subtes
-            </span>
-          </button>
+              V2
+            </button>
+            <button
+              type="button"
+              title="Paket V1 • Arsip (10 Soal)"
+              onClick={() => handleSelectVersion('v1')}
+              className={`px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider transition-colors duration-200 focus:outline-none ${
+                selectedVersion === 'v1'
+                  ? 'text-white dark:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              V1
+            </button>
+          </div>
         </div>
       </div>
 
@@ -162,10 +220,16 @@ export default function DuolingoSelectTestPage() {
       )}
 
       {/* Subtests Grid (Duolingo Style Chunky 3D Cards with Smooth Fade-in-up) */}
-      <div key={selectedTrack} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 animate-fade-in-up">
-        {subtests.map(([key, meta], idx) => {
+      <div key={`${selectedTrack}-${selectedVersion}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 animate-fade-in-up">
+        {subtests.map(([key, meta]) => {
           const isCurrentLoading = isLoading && loadingKey === key;
-          const minutes = Math.round(meta.timeLimitSec / 60);
+          const questionCount =
+            selectedVersion === 'v1' ? (meta.v1Count ?? 10) : (meta.v2Count ?? meta.questionCount);
+          const timeLimitSec =
+            questionCount === meta.questionCount
+              ? meta.timeLimitSec
+              : Math.max(60, Math.round((meta.timeLimitSec * questionCount) / meta.questionCount));
+          const minutes = Math.round((timeLimitSec / 60) * 10) / 10;
 
           return (
             <div
@@ -177,7 +241,16 @@ export default function DuolingoSelectTestPage() {
               <div className="flex items-center justify-between gap-2 mb-4">
                 <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-extrabold text-slate-600 dark:text-slate-400 flex items-center gap-1">
                   <Clock className="w-3 h-3 text-slate-400" />
-                  {minutes} Menit • {meta.seedCount} Soal
+                  {String(minutes).replace('.', ',')} Menit • {questionCount} Soal
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                    selectedVersion === 'v2'
+                      ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {selectedVersion.toUpperCase()}
                 </span>
               </div>
 

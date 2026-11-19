@@ -6,12 +6,18 @@ import { toClientQuestion } from '@/lib/seedLoader';
 import { sessionsCache, StoredSession } from '@/lib/sessionStore';
 import { fetchQuestionsForSubtest } from '@/lib/supabaseSimulation';
 import { saveTestSessionToSupabase } from '@/lib/supabaseTest';
-import { TestType } from '@/types/test';
+import { QuestionVersion, TestType } from '@/types/test';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { test_type, subtest } = body as { test_type: TestType; subtest: string };
+    const {
+      test_type,
+      subtest,
+      version = 'v2',
+    } = body as { test_type: TestType; subtest: string; version?: QuestionVersion };
+
+    const normalizedVersion: QuestionVersion = version === 'v1' ? 'v1' : 'v2';
 
     if (!test_type || !subtest) {
       return NextResponse.json(
@@ -38,7 +44,7 @@ export async function POST(request: NextRequest) {
     const sessionCookie = cookieStore.get('nexam_session');
     const userId = sessionCookie?.value || 'anonymous_user';
 
-    const questions = await fetchQuestionsForSubtest(subtest);
+    const questions = await fetchQuestionsForSubtest(subtest, normalizedVersion);
     if (!questions || questions.length === 0) {
       return NextResponse.json(
         {
@@ -50,7 +56,10 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = crypto.randomUUID();
-    const timeLimitSec = config.timeLimitSec;
+    const timeLimitSec =
+      questions.length === config.questionCount
+        ? config.timeLimitSec
+        : Math.max(60, Math.round((config.timeLimitSec * questions.length) / config.questionCount));
     const startedAt = new Date().toISOString();
 
     const clientQuestions = questions.map((q, idx) => toClientQuestion(q, idx + 1, 'id'));
@@ -60,6 +69,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       test_type,
       subtest,
+      version: normalizedVersion,
       time_limit_sec: timeLimitSec,
       started_at: startedAt,
       finished_at: null,
@@ -77,6 +87,7 @@ export async function POST(request: NextRequest) {
         id: sessionId,
         test_type,
         subtest,
+        version: normalizedVersion,
         time_limit_sec: timeLimitSec,
         started_at: startedAt,
         questions: clientQuestions,
